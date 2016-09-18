@@ -1,0 +1,200 @@
+#Instalador
+#El log se hace en el archivo instalep.log en el directorio /dirconf
+#Creo el archivo de log
+touch ./dirconf/instalep.log
+
+#Funcion para escribir en consola y grabar en el log en una sola linea.
+function echoes {
+	echo "$1"
+	echo "$1">> ./dirconf/instalep.log
+}
+
+#Defino variables para guardar los nombres de los directorios
+DIRCONF="dirconf"
+DIRBIN="bin"
+DIRMAE="mae"
+DIRREC="nov"
+DIROK="ok"
+DIRPROC="imp"
+DIRINFO="rep"
+DIRLOG="log"
+DIRNOK="nok"
+
+INSTALLATIONOK=false
+
+while [ "$INSTALLATIONOK" != true ]
+do
+#Mostrar y grabar "Inicio del proceso. Usuario Fecha y Hora"
+DATE=$(date)
+echoes "Inicio del proceso. $USER $DATE"
+
+#Detectar si el sistema esta instalado. Para eso se chequea si existe el
+#archivo instalep.conf en dirconf
+if [ -f ./dirconf/instalep.conf ]
+then
+	#Mostrar y grabar todos los datos de instalacion (nombres de directorio)
+	echoes 'Sistema instalado'
+	old_IFS=$IFS
+	IFS=$'\n'
+	LINEAS=($(cat ./dirconf/instalep.conf))
+	IFS=$old_IFS
+	echoes "Directorio de Configuracion: ${LINEAS[0]}"
+	ls "./${LINEAS[0]}"
+        echoes "Directorio de Ejecutables: ${LINEAS[1]}"
+        ls "./${LINEAS[1]}"
+        echoes "Directorio de Maestros y Tablas: ${LINEAS[2]}"
+        ls "./${LINEAS[2]}"
+        echoes "Directorio de Recepcion de Novedades: ${LINEAS[3]}"
+        echoes "Directorio de Archivos Aceptados: ${LINEAS[4]}"
+	echoes "Directorio de Archivos Procesados: ${LINEAS[5]}"
+	echoes "Directorio de Archivos de Reportes: ${LINEAS[6]}"
+	echoes "Directorio de Archivos de Log: ${LINEAS[7]}"
+	echoes "Directorio de Archivos Rechazados: ${LINEAS[8]}"
+	exit 0
+fi
+
+
+clear
+
+#Comienza el ingreso de nombres de directorios
+echoes "Defina el directorio de ejecutables ($DIRBIN):"
+read DIRBIN
+
+echoes "Defina el directorio de maestros y tablas ($DIRMAE):"
+read DIRMAE
+
+echoes "Defina el directorio de recepcion de novedades ($DIRREC):"
+read DIRREC
+
+echoes "Defina el directorio de Archivos Aceptados ($DIROK):"
+read DIROK
+
+echoes "Defina el directorio de Archivos Aceptados ($DIRPROC):"
+read DIRPROC
+
+echoes "Defina el directorio de Reportes ($DIRINFO):"
+read DIRINFO
+
+echoes "Defina el directorio de log ($DIRLOG):"
+read DIRLOG
+
+echoes "Defina el directorio de rechazados ($DIRNOK):"
+read DIRNOK
+
+#Obtengo el espacio libre en MBytes con una M al final.
+FREESPACE=$(df ./ -BM |tail -1|awk '{print $4}')
+#Le saco el ultimo caracter (M) para que quede el numero limpio.
+FREESPACE=${FREESPACE%?}
+
+#CORRECTSPACE es falsa mientras no se defina un espacio requerido correcto.
+CORRECTSPACE=false
+while [ "$CORRECTSPACE" != true ]
+do
+	echoes 'Defina espacio minimo libre para la repecion de archivos en Mbytes (100):'
+	read SPACE
+
+	if [ $SPACE -le $FREESPACE ] #less or equal
+	then
+		echoes 'Suficiente espacio en disco.'
+		echoes "Espacio disponible: $FREESPACE Mb."
+		echoes "Espacio requerido $SPACE Mb."
+		echoes 'De enter para continuar'
+		CORRECTSPACE=true
+		read TECLA
+	else
+		echoes 'Insuficiente espacio en disco.'
+		echoes "Espacio disponible: $FREESPACE Mb."
+		echoes "Espacio requerido $SPACE Mb."
+		echoes 'Intentelo nuevamente.'
+	fi
+done
+
+#limpio pantalla
+clear
+
+#Muestro y grabo configuracion final y archivos.
+echoes "Directorio de Configuracion: $DIRCONF"
+#ls $DIRCONF
+#ls $DIRCONF >> ./dirconf/instalep.log
+echoes "Directorio de Ejecutables: $DIRBIN"
+#ls $DIRBIN
+#ls $DIRBIN >> ./dirconf/instalep.log
+echoes "Directorio de Maestros y Tablas: $DIRMAE"
+#ls $DIRMAE
+#ls $DIRMAE >> ./dirconf/instalep.log
+echoes "Directorio de Recepcion de Novedades: $DIRREC"
+#ls $DIRREC
+#ls $DIRREC >> ./dirconf/instalep.log
+echoes "Directorio de Archivos Aceptados: $DIROK"
+#ls $DIROK
+#ls $DIROK >> ./dirconf/instalep.log
+echoes "Directorio de Archivos Procesados: $DIRPROC"
+#ls $DIRPROC
+#ls $DIRPROC >> ./dirconf/instalep.log
+echoes "Directorio de Archivos de Reportes: $DIRINFO"
+#ls $DIRINFO
+#ls $DIRINFO >> ./dirconf/instalep.log
+echoes "Directorio de Archivos de Log: $DIRLOG"
+#ls $DIRLOG
+#ls $DIRLOG >> ./dirconf/instalep.log
+echoes "Directorio de Archivos Rechazados: $DIRNOK"
+#ls $DIRNOK
+#ls $DIRNOK >> ./dirconf/instalep.log
+echoes "Estado de la instalacion: LISTA"
+echoes "Desea continuar con la instalacion? (Si - No)"
+read RESPONSE
+if [ "$RESPONSE" = Si ]
+then
+	INSTALLATIONOK=true
+fi
+done
+
+echoes "Iniciando instalacion. Esta Ud. seguro? (Si - No)"
+read RESPONSE
+if [ "$RESPONSE" = No ]
+then
+	exit 0
+fi
+
+#Creo los directorios
+echoes "Creando Estructuras de directorio. . . ."
+mkdir -p $DIRBIN
+mkdir -p $DIRMAE
+mkdir -p $DIRREC
+mkdir -p $DIROK
+mkdir -p $DIRPROC
+mkdir -p "$DIRPROC/proc"
+mkdir -p $DIRINFO
+mkdir -p $DIRLOG
+mkdir -p $DIRNOK
+
+#Mover programas y funciones
+#Falta poner scripts en DIRBIN
+echoes "Instalando Programas y Funciones"
+
+#Mover los archivos maestros y tablas
+#Falta poner maestros y tablas en DIRMAE
+echoes "Instalando Archivos Maestros y Tablas"
+
+# Grabo en el archivo instalep.conf en /dirconf un registro por cada variable
+# configurada
+# Primero los nombres de los directorios en el orden en el que son solicitados
+# y luego un registro con el espacio requerido solicitado.
+touch ./dirconf/instalep.conf
+cd dirconf
+echo "$DIRBIN" >> instalep.conf
+echo "$DIRMAE" >> instalep.conf
+echo "$DIRREC" >> instalep.conf
+echo "$DIROK" >> instalep.conf
+echo "$DIRPROC" >> instalep.conf
+echo "$DIRINFO" >> instalep.conf
+echo "$DIRLOG" >> instalep.conf
+echo "$DIRNOK" >> instalep.conf
+echo "$SPACE" >> instalep.conf
+cd ..
+
+echoes "Actualizando la configuracion del sistema"
+echoes "Instalacion CONCLUIDA."
+
+DATE=$(date)
+echoes "Fin del proceso. $USER $DATE "

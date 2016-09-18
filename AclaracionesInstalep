@@ -1,0 +1,9 @@
+Cosas que faltan
+*Falta mover los scripts a la carpeta de ejecutables y los archivos maestros a la carpeta mae.
+*Hay algo que esta mal. Te pide que muestres las carpetas en consola y listes los archivos en cada una antes de pedirte que las crees. No puedo mostrar los archivos en las carpetas si todavia no los movi (puntos 10 y 13 del enunciado).
+*Falta checkear que el usuario no ingrese "dirconf" como posible nombre de directorio ya que es un nombre reservado.
+*Cuando te pide confirmacion, lee literalmente un Si o un No con mayuscula primero y minuscula despues. No encontre forma de pasar la respuesta todo a minuscula o a mayuscula para no tener que chequear eso.
+*El archivo instalep.conf tiene un registro por cada variable setteada en la instalacion (nombres de directorio y espacio en disco solicitado).
+*Me olvide de que todo iba dentro de una carpeta $GRUPOXX, falta agregar eso tambien.
+*Para probarlo, lean el enunciado paso por paso. Si quieren instalarlo, eliminen el archivo instalep.conf dentro de dirconf, porque si este existe, significa que el sistema ya se instalo y no los va a dejar.
+
