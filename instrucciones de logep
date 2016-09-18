@@ -15,6 +15,13 @@ para desplegar ayuda usar la opcion -h. Basicamente dice lo mismo que este read
 Bien, cuando el archivo supera las 2000 lineas, se toman las primeras 1000 lineas de codigo y se guardan en otro archivo y se comprimen. Las demas lineas
 quedan en el archivo original. Cuando se vuelve a superar las 2000 linear el primer archivo comprimido es reemplazado por el nuevo.
 
+Restricciones
+Ni el mensaje y ni el nombre del comando deben tener caracteres de nueva linea.
+
+Si a alguno se le ocurre probar la parte del script en la que truncar el archivo de log y comprime lo truncado
+y no tiene ganas de programar un for de 2000 iteraciones le sugiero que cambie la variable cantidad maxima de lineas
+por un valor par mas chico. Desde luego debe volver a setearla en 2000.
+
 Ejemplo
 
 #le indico que use el directorio actual
