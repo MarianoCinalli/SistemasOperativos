@@ -143,18 +143,19 @@ echoes "Directorio de Archivos Rechazados: $DIRNOK"
 echoes "Estado de la instalacion: LISTA"
 echoes "Desea continuar con la instalacion? (Si - No)"
 read RESPONSE
-if [ "$RESPONSE" = Si ]
-then
-	INSTALLATIONOK=true
-fi
+
+case "$RESPONSE" in
+	Si|si|SI ) INSTALLATIONOK=true;;
+esac
 done
 
 echoes "Iniciando instalacion. Esta Ud. seguro? (Si - No)"
 read RESPONSE
-if [ "$RESPONSE" = No ]
-then
-	exit 0
-fi
+
+case "$RESPONSE" in
+	NO|no|No )	exit 0 ;;
+esac
+
 
 #Creo los directorios
 echoes "Creando Estructuras de directorio. . . ."
