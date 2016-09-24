@@ -8,7 +8,7 @@
 if [ "$SETEPLAM" == SET ]
 then
 	mensaje="Ambiente ya inicializado, para reinicializar termine la sesión e ingrese nuevamente"
-	printf "%s\n" "$mensaje"
+	printf "%s\n" "$mensaje">&2
 	./logep -e "$0" "$mensaje"
 	exit
 fi
@@ -42,8 +42,8 @@ fijar_permisos () {
 						r) permiso=lectura;;
 						x) permiso=ejecución;;
 					esac
-					printf "error, fallo al intentar fijar permiso de $permiso en archivo "$2", verificar si archivo existe o si el usario" 
-					printf "tiene permitido cambiar permisos\n"
+					printf "error, fallo al intentar fijar permiso de $permiso en archivo "$2", verificar si archivo existe o si el usario">&2
+					printf "tiene permitido cambiar permisos\n">&2
 					return -1
 				fi
 		fi
@@ -134,6 +134,6 @@ case "$opcion" in
 		;;
 
 	* ) 
-		echo "Ingrese una opción correcta";;
+		printf "Ingrese una opción correcta\n">&2;;
 esac
 
