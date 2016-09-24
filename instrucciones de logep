@@ -1,7 +1,7 @@
 Hola chicos aqui va instrucciones de como usar el comando
 
-Antes que nada se debe instar la variable LOGDIR que tendra la direccion del directorio de logs.
-Esta variable debe ser globar asi puede verla logep.sh
+Antes que nada se debe instar la variable DIRLOG que tendra la direccion del directorio de logs.
+Esta variable debe ser globar asi puede verla logep, use export para hacerla global
 Bien para sellecionar el tipo de mensaje se usa las siguientes opciones
 
 -i mensaje tipo info
@@ -12,8 +12,7 @@ Por defecto usa la opcion info
 
 para desplegar ayuda usar la opcion -h. Basicamente dice lo mismo que este read
 
-Bien, cuando el archivo supera las 2000 lineas, se toman las primeras 1000 lineas de codigo y se guardan en otro archivo y se comprimen. Las demas lineas
-quedan en el archivo original. Cuando se vuelve a superar las 2000 linear el primer archivo comprimido es reemplazado por el nuevo.
+Bien, cuando el archivo supera las 2000 lineas, se trunca a la mitad
 
 Restricciones
 Ni el mensaje y ni el nombre del comando deben tener caracteres de nueva linea.
@@ -25,5 +24,5 @@ por un valor par mas chico. Desde luego debe volver a setearla en 2000.
 Ejemplo
 
 #le indico que use el directorio actual
-export LODGDIR=.
-logep.sh -w comando mensaje
+export DIRLOG=.
+logep -w comando mensaje

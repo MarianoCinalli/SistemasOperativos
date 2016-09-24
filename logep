@@ -3,15 +3,15 @@
 # tipo de log, por defecto info
 tipo=[INFO]
 
-#check si LOGDIR esta fijada
-if [ -z "$LOGDIR" ]
+#check si DIRLOG esta fijada
+if [ -z "$DIRLOG" ]
 then
-	printf "%b\n" "logep: la variable LOGDIR esta vacia">&2
-	exit
-elif [ ! -d "$LOGDIR" ]
+	printf "%b\n" "logep: la variable DIRLOG esta vacia">&2
+	exit -1
+elif [ ! -d "$DIRLOG" ]
 then
-	printf "%b\n" "logep: la variable LOGDIR no contiene un directorio valido">&2
-	exit
+	printf "%b\n" "logep: la variable DIRLOG no contiene un directorio valido">&2
+	exit -1
 fi	
 
 #parsea todas las opciones de log y toma la ultima a menos que haya
@@ -30,9 +30,9 @@ do
 		 printf "Tipos:\n"
 		 printf " %b\n" "-i graba un mensaje de tipo info"  "-w graba un mensaje de tipo warm" "-e graba un mensaje de tipo error"
 		 # despues de dar el mensaje de ayuda, sale de la invocacion
-		 exit;;
+		 exit 0;;
 		#si el parametro no es conocido, cierra la aplicacion, el mensaje de error es escrito por el comando getopts
-		*)exit;;
+		*)exit 0;;
 	esac
 done
 
@@ -43,23 +43,25 @@ shift $[ $OPTIND - 1 ]
 if [ $# -lt 2 ]
 then
 	printf "%b\n" "logep: falta alguno de los parametros obligatorios [comando] o [mensaje]">&2
-	exit
+	exit -1
 fi
 
 #revisa que no haya saltos de linea
 if [[ "$1" == *$'\n'* ]] || [[ $2 == *$'\n'* ]]
 then
 	printf "logep: mensaje y comando no deben tener saltos de lineas\n">&2
-	exit
+	exit -1
 fi
 
 
-#guarda el directorio actual
-act_d=´pwd´
-cd "$LOGDIR"
-
 #archivo de log
 logfile="$1.log"
+#guardo directorio actual
+directorio_act=`pwd`
+
+#salto a directorio de LOG
+
+cd "$DIRLOG"
 
 printf "%b\n" "$USERNAME `date +%D` $1 $tipo $2">>"$logfile"
 
@@ -68,25 +70,18 @@ max_lines=2000
 
 if [ `wc -l < "$logfile"` -lt $max_lines ]
 then
-	exit
+	exit 0
 fi
 
-#mensaje para indicar que se ha excedido el tamanio del archivo
-log_excedido="Log Excedido"
-
-printf "%s\n" "$log_excedido"
+printf "%b\n" "$USERNAME `date +%D` $1 [INFO] Log Excedido">>"$logfile"
 
 #crea un archivo temporal de trabajo
-work_file="temp$1.log"
-
-#guarda las primeras max_lines/2 lineas del log en un archivo comprimido
-head -n $[max_lines/2] "$logfile" >"$work_file"
-zip "$logfile.zip" "$work_file"
+work_file="$1.temp.log"
 
 #en el original deja las restantes lineas
-printf "%b\n" "$USERNAME `date +%D` $1 $tipo $log_excedido">"$work_file"
-tail -n $[max_lines/2] "$logfile" >>"$work_file"
+tail -n $[max_lines/2] "$logfile" >"$work_file"
 cat "$work_file">"$logfile"
 rm "$work_file"
-cd $act_d
+
+cd "$directorio_act"
 

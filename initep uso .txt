@@ -1,0 +1,5 @@
+el comando initep recibe el archivo de configuracion por entrada estandar como unico parametro, el comando debe ser corrido en modo foreground sin proceso hijo.
+
+o sea:
+
+. initep archivo_configuracion
