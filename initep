@@ -1,9 +1,5 @@
 #!/bin/bash
 
-#----------------------------
-#Marcelo agregue este bloque para que las setencias del case no sean tan largas y repetitivas
-#----------------------------
-
 #me fijo si el ambiente ya fue inicalizado, para eso, uso la variable SETEPLAM como flag
 if [ "$SETEPLAM" == SET ]
 then
@@ -14,12 +10,6 @@ then
 fi
 
 export SETEPLAM=SET
-
-
-#-------------------
-#Marcelo, no tiene sentido fijarse si el archivo de configuracion tiene permiso de lectura despues de haberlo leido.
-#Asi que muevo la parte donde preguntas los permisos de archivos al principio.
-#----------------------
 
 #Verifico permisos de escritura,lectura y ejecucion cuando corresponda
 
