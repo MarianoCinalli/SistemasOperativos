@@ -4,7 +4,7 @@
 #El log se hace en el archivo instalep.log en el directorio /dirconf
 #Creo el archivo de log
 touch ./dirconf/instalep.log
-
+ACTUALPATH=$(realpath ./) 
 #Funcion para escribir en consola y grabar en el log en una sola linea.
 function echoes {
 	echo "$1"
@@ -385,16 +385,17 @@ echoes "Instalando Archivos Maestros y Tablas"
 # Primero los nombres de los directorios en el orden en el que son solicitados
 # y luego un registro con el espacio requerido solicitado.
 touch ./dirconf/instalep.conf
+ACTUALDATE=$(date +"%d/%m/%Y %T")
 cd dirconf
-echo "$DIRBIN" >> instalep.conf
-echo "$DIRMAE" >> instalep.conf
-echo "$DIRREC" >> instalep.conf
-echo "$DIROK" >> instalep.conf
-echo "$DIRPROC" >> instalep.conf
-echo "$DIRINFO" >> instalep.conf
-echo "$DIRLOG" >> instalep.conf
-echo "$DIRNOK" >> instalep.conf
-echo "$SPACE" >> instalep.conf
+echo "DIRBIN=$ACTUALPATH/$DIRBIN=$USER=$ACTUALDATE" >> instalep.conf
+echo "DIRMAE=$ACTUALPATH/$DIRMAE=$ACTUALDATE" >> instalep.conf
+echo "DIRREC=$ACTUALPATH/$DIRREC=$USER=$ACTUALDATE" >> instalep.conf
+echo "DIROK=$ACTUALPATH/$DIROK=$USER=$ACTUALDATE" >> instalep.conf
+echo "DIRPROC=$ACTUALPATH/$DIRPROC=$USER=$ACTUALDATE" >> instalep.conf
+echo "DIRINFO=$ACTUALPATH/$DIRINFO=$USER=$ACTUALDATE" >> instalep.conf
+echo "DIRLOG=$ACTUALPATH/$DIRLOG=$USER=$ACTUALDATE" >> instalep.conf
+echo "DIRNOK=$ACTUALPATH/$DIRNOK=$USER=$ACTUALDATE" >> instalep.conf
+echo "DIRSPACE=$SPACE=$USER=$ACTUALDATE" >> instalep.conf
 cd ..
 
 echoes "Actualizando la configuracion del sistema"
