@@ -1,11 +1,14 @@
 #!/bin/bash
 
+#incluyo funcion logep
+source ./logep
+
 #me fijo si el ambiente ya fue inicalizado, para eso, uso la variable SETEPLAM como flag
 if [ "$SETEPLAM" == SET ]
 then
 	mensaje="Ambiente ya inicializado, para reinicializar termine la sesión e ingrese nuevamente"
 	printf "%s\n" "$mensaje">&2
-	./logep -e "$0" "$mensaje"
+	logep -e "$0" "$mensaje"
 	exit
 fi
 
@@ -91,36 +94,34 @@ do
 done <"$1"
 
 #en la variable de ambiente path agrego el directorio de ejecutables
-PATH=$PATH:"$DIRBIN"
+PATH="$PATH:$DIRBIN"
 
 #las variables se han inicalizado y los permisos de los arhcivos han sido fijados
 mensaje="Estado del Sistema: INICIALIZADO"
 printf "%s\n" "$mensaje"
-./logep -i "$0" "$mensaje"
+logep -i "$0" "$mensaje"
 
 #Pregunto por demonep
 read -p "¿Desea efectuar la activación de Demonep (S/N)?" opcion
 
-instrucciones_activar_demonio="Para activar el demonio corra comando demonep en background\n. Recibe como entrada los archivo maestros, tablas y el archivo
-			       novedades. Estos archivos se pueden encontrar en los directorios DIRMAE y DIRREC respectivamente\n"
+instrucciones_activar_demonio="Para activar el demonio corra comando demonep en background\n. Recibe como entrada los archivo maestros, tablas y el archivo novedades. Estos archivos se pueden encontrar en los directorios DIRMAE y DIRREC respectivamente\n"
 
-instrccions_desactivar_demonio="Para desactivar demonio use el comando kill SIGTERM pid, donde pid es identificador del proceso,
-				en caso de fallar use kill SIGKILL pid."
+instrucciones_desactivar_demonio="Para desactivar demonio use el comando kill SIGTERM pid, donde pid es identificador del proceso, en caso de fallar use kill SIGKILL pid."
 
 case "$opcion" in
-	s|S ) 
+	s|S ) 		
 		printf "%s\n" "$instrucciones_desactivar_demonio"
-		./logep -i "$0" "¿Desea efectuar la activación de Demonep (S/N)? Si"
-		./demonep &
+		logep -i "$0" "¿Desea efectuar la activación de Demonep (S/N)? Si"
+		demonep &
 		pid=$!			
 		printf "%s\n" "Demonep corriendo bajo el numero: $pid" 
-		./logep -i "$0" "Demonep corriendo bajo el numero: $pid"
+		logep -i "$0" "Demonep corriendo bajo el numero: $pid"
 		;;
 
 	n|N ) 
 		printf "%s\n" "$instrucciones_activar_demonio"
 		printf "%s\n" "$instrucciones_desactivar_demonio"
-		./logep -i "$0" "¿Desea efectuar la activación de Demonep (S/N)? No"
+		logep -i "$0" "¿Desea efectuar la activación de Demonep (S/N)? No"
 		;;
 
 	* ) 
