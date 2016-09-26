@@ -386,7 +386,7 @@ touch ./dirconf/instalep.conf
 ACTUALDATE=$(date +"%d/%m/%Y %T")
 cd dirconf
 echo "DIRBIN=$ACTUALPATH/$DIRBIN=$USER=$ACTUALDATE" >> instalep.conf
-echo "DIRMAE=$ACTUALPATH/$DIRMAE=$ACTUALDATE" >> instalep.conf
+echo "DIRMAE=$ACTUALPATH/$DIRMAE=$USER=$ACTUALDATE" >> instalep.conf
 echo "DIRREC=$ACTUALPATH/$DIRREC=$USER=$ACTUALDATE" >> instalep.conf
 echo "DIROK=$ACTUALPATH/$DIROK=$USER=$ACTUALDATE" >> instalep.conf
 echo "DIRPROC=$ACTUALPATH/$DIRPROC=$USER=$ACTUALDATE" >> instalep.conf
