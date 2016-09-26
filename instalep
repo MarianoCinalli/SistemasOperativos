@@ -1,28 +1,20 @@
 #!/bin/bash
 
 #Instalador
-#Seteo las carpetas necesarias para la instalacion.
-#Guardo el directorio padre. 
-DIRROOT="./GRUPO03/"
-#Guardo la direccion de el archivo de configuracion
-DIRCONF=$DIRROOT"dirconf/"
-DIRLOG=$DIRCONF"instalep.conf"
-
-#Creo las carpeta y el archivo de log.
-mkdir $DIRROOT
-mkdir $DIRCONF
-touch $DIRLOG
+#El log se hace en el archivo instalep.log en el directorio /dirconf
+#Creo el archivo de log
+touch ./dirconf/instalep.log
 
 #Funcion para escribir en consola y grabar en el log en una sola linea.
 function echoes {
 	echo "$1"
-	echo "$1">> $DIRLOG
- }
+	echo "$1">> ./dirconf/instalep.log
+}
 
 # Devuelve verdadero si el parametro es igual del nombre reservado dirconf
 function userInputIsInvalid() {
 
-	if [ "$userInput" == "$reserved" ]
+	if [ "$userInput" == "$reservedName" ]
 	then
 		return "1"
 	else
@@ -32,14 +24,15 @@ function userInputIsInvalid() {
 }
 
 #Defino variables para guardar los nombres de los directorios
-DIRBIN=$DIRROOT"bin"
-DIRMAE=$DIRROOT"mae"
-DIRREC=$DIRROOT"nov"
-DIROK=$DIRROOT"ok"
-DIRPROC=$DIRROOT"imp"
-DIRINFO=$DIRROOT"rep"
-DIRLOG=$DIRROOT"log"
-DIRNOK=$DIRROOT"nok"
+DIRCONF="dirconf"
+DIRBIN="bin"
+DIRMAE="mae"
+DIRREC="nov"
+DIROK="ok"
+DIRPROC="imp"
+DIRINFO="rep"
+DIRLOG="log"
+DIRNOK="nok"
 
 INSTALLATIONOK=false
 
@@ -51,13 +44,13 @@ echoes "Inicio del proceso. $USER $DATE"
 
 #Detectar si el sistema esta instalado. Para eso se chequea si existe el
 #archivo instalep.conf en dirconf
-if [ -f $DIRLOG ]
+if [ -f ./dirconf/instalep.conf ]
 then
 	#Mostrar y grabar todos los datos de instalacion (nombres de directorio)
 	echoes 'Sistema instalado'
 	old_IFS=$IFS
 	IFS=$'\n'
-	LINEAS=($(cat $DIRLOG))
+	LINEAS=($(cat ./dirconf/instalep.conf))
 	IFS=$old_IFS
 	echoes "Directorio de Configuracion: ${LINEAS[0]}"
 	ls "./${LINEAS[0]}"
@@ -77,7 +70,7 @@ fi
 
 clear
 
-#Comienza el ingreso de nombres de directorios.
+#Comienza el ingreso de nombres de directorios
 #Variables auxiliares --------------------------------------------------
 userInput=""
 reservedName="dirconf"
@@ -129,7 +122,7 @@ done
 #Si el usuario ingresa un string vacio (apreta enter) dejo el valor por defecto.
 if [ $userInput ] 
 then
-	DIRMAE=user_input
+	DIRMAE=$userInput
 fi
 
 # REC --------------------------------------------------------------------------
@@ -155,7 +148,7 @@ done
 #Si el usuario ingresa un string vacio (apreta enter) dejo el valor por defecto.
 if [ $userInput ] 
 then
-	DIRREC=user_input
+	DIRREC=$userInput
 fi
 
 # OK ---------------------------------------------------------------------------
@@ -181,7 +174,7 @@ done
 #Si el usuario ingresa un string vacio (apreta enter) dejo el valor por defecto.
 if [ $userInput ] 
 then
-	DIROK=user_input
+	DIROK=$userInput
 fi
 
 # PROC -------------------------------------------------------------------------
@@ -207,7 +200,7 @@ done
 #Si el usuario ingresa un string vacio (apreta enter) dejo el valor por defecto.
 if [ $userInput ] 
 then
-	DIRPROC=user_input
+	DIRPROC=$userInput
 fi
 
 # INFO -------------------------------------------------------------------------
@@ -233,7 +226,7 @@ done
 #Si el usuario ingresa un string vacio (apreta enter) dejo el valor por defecto.
 if [ $userInput ] 
 then
-	DIRINFO=user_input
+	DIRINFO=$userInput
 fi
 
 # LOG --------------------------------------------------------------------------
@@ -259,7 +252,7 @@ done
 #Si el usuario ingresa un string vacio (apreta enter) dejo el valor por defecto.
 if [ $userInput ] 
 then
-	DIRLOG=user_input
+	DIRLOG=$userInput
 fi
 
 # NOK --------------------------------------------------------------------------
@@ -284,10 +277,11 @@ done
 #Si el usuario ingresa un string vacio (apreta enter) dejo el valor por defecto.
 if [ $userInput ] 
 then
-	DIRNOK=user_input
+	DIRNOK=$userInput
 fi
 
 # ------------------------------------------------------------------------------
+
 #Obtengo el espacio libre en MBytes con una M al final.
 FREESPACE=$(df ./ -BM |tail -1|awk '{print $4}')
 #Le saco el ultimo caracter (M) para que quede el numero limpio.
@@ -401,8 +395,8 @@ echo "$DIRNOK" >> instalep.conf
 echo "$SPACE" >> instalep.conf
 cd ..
 
-$DIRLOG configuracion del sistema"
+echoes "Actualizando la configuracion del sistema"
 echoes "Instalacion CONCLUIDA."
 
 DATE=$(date)
-echoes "Fin del$DIRLOG
+echoes "Fin del proceso. $USER $DATE "
