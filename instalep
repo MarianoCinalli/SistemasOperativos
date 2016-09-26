@@ -373,6 +373,8 @@ mkdir -p $DIRNOK
 #Mover programas y funciones
 #Falta poner scripts en DIRBIN
 echoes "Instalando Programas y Funciones"
+cp initep $DIRBIN
+cp logep $DIRBIN
 
 #Mover los archivos maestros y tablas
 #Falta poner maestros y tablas en DIRMAE
