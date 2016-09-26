@@ -72,6 +72,7 @@ logep () {
 
 	if [ `wc -l < "$logfile"` -lt $max_lines ]
 	then
+		cd "$directorio_act"
 		return 0
 	fi
 

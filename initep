@@ -9,122 +9,127 @@ then
 	mensaje="Ambiente ya inicializado, para reinicializar termine la sesión e ingrese nuevamente"
 	printf "%s\n" "$mensaje">&2
 	logep -e "$0" "$mensaje"
-	exit
-fi
+else
 
-export SETEPLAM=SET
+	export SETEPLAM=SET
 
-#Verifico permisos de escritura,lectura y ejecucion cuando corresponda
+	#Verifico permisos de escritura,lectura y ejecucion cuando corresponda
 
-#Termina la ejecucion de initep sino puede cambiar el permiso correspondiente
-#Creo una lista para enumerar los archivos ejecutables
+	#Termina la ejecucion de initep sino puede cambiar el permiso correspondiente
+	#Creo una lista para enumerar los archivos ejecutables
 
-#lista que contiene a los ejecutables, les voy a cambiar los permisos de lecutura y ejecucion
-files_ejecutables="logep instalep demonep"
+	#lista que contiene a los ejecutables, les voy a cambiar los permisos de lecutura y ejecucion
+	files_ejecutables="logep instalep demonep"
 
-#su primer parametro es una lista de los permisos a fijar, por ejemplo r w x
-#su segundo parametro es el nombre del archivo
-fijar_permisos () {
-	for permiso in $1
+	#su primer parametro es una lista de los permisos a fijar, por ejemplo r w x
+	#su segundo parametro es el nombre del archivo
+	fijar_permisos () {
+		for permiso in $1
+		do
+			if [ ! -$permiso "$2" ]
+			then
+					if ! chmod -f +$permiso "$2"
+					then 
+						case $permiso in
+							r) permiso=lectura;;
+							x) permiso=ejecución;;
+						esac
+						printf "error, fallo al intentar fijar permiso de $permiso en archivo "$2", verificar si archivo existe o si el ">&2
+						printf "usuario tiene permitido cambiar permisos\n">&2
+						return -1
+					fi
+			fi
+		done
+		return 0
+	}
+	
+	#creo la variable error, esta sirve como flag para detectar si se continua la ejecuicon o no
+	error=false
+
+	#permisos del archivo de configuracion
+	if ! fijar_permisos r "$1"
+	then
+		error=true
+	fi
+
+	#permisos de ejecutables
+	for ejecutable in $files_ejecutables
 	do
-		if [ ! -$permiso "$2" ]
+		if ! fijar_permisos "r x" "$ejecutable"
 		then
-				if ! chmod -f +$permiso "$2"
-				then 
-					case $permiso in
-						r) permiso=lectura;;
-						x) permiso=ejecución;;
-					esac
-					printf "error, fallo al intentar fijar permiso de $permiso en archivo "$2", verificar si archivo existe o si el usario">&2
-					printf "tiene permitido cambiar permisos\n">&2
-					return -1
-				fi
+			error=true
 		fi
 	done
-	return 0
-}
-
-#permisos del archivo de configuracion
-if ! fijar_permisos r "$1"
-then
-	exit -1
-fi
-
-#permisos de ejecutables
-for ejecutable in $files_ejecutables
-do
-	if ! fijar_permisos "r x" "$ejecutable"
+	
+	if [ error != true ]
 	then
-		exit -1
+		#Inicializo variables de directorio
+		while read -r linea
+		do
+			nombreDirectorio=$( echo "$linea" | cut -d= -f1)
+			ruta=$( echo "$linea" | cut -d= -f2)
+			usuario=$(echo "$linea" | cut -d= -f3)
+			case $nombreDirectorio in
+				DIRBIN) 
+					export DIRBIN=$ruta
+					;;
+				DIRMAE)
+					export DIRMAE=$ruta
+					;;
+				DIRREC)
+					export DIRREC=$ruta
+					;;
+				DIROK) 
+					export DIROK=$ruta 
+					;;
+				DIRINFO)
+					export DIRINFO=$ruta 
+					;;
+				DIRLOG)
+					export DIRLOG=$ruta 
+					;;
+				GRUPO) 
+					export GRUPO=$ruta 
+					;;
+				DIRPROC)
+					export DIRPROC=$ruta 
+					;;
+			esac
+		done <"$1"
+
+		#en la variable de ambiente path agrego el directorio de ejecutables
+		PATH="$PATH:$DIRBIN"
+
+		#las variables se han inicalizado y los permisos de los arhcivos han sido fijados
+		mensaje="Estado del Sistema: INICIALIZADO"
+		printf "%s\n" "$mensaje"
+		logep -i "$0" "$mensaje"
+
+		#Pregunto por demonep
+		read -p "¿Desea efectuar la activación de Demonep (S/N)?" opcion
+
+		instrucciones_activar_demonio="Para activar el demonio corra comando demonep en background\n. Recibe como entrada los archivo maestros, tablas y el archivo novedades. Estos archivos se pueden encontrar en los directorios DIRMAE y DIRREC respectivamente\n"
+
+		instrucciones_desactivar_demonio="Para desactivar demonio use el comando kill SIGTERM pid, donde pid es identificador del proceso, en caso de fallar use kill SIGKILL pid."
+
+		case "$opcion" in
+			s|S ) 		
+				printf "%s\n" "$instrucciones_desactivar_demonio"
+				logep -i "$0" "¿Desea efectuar la activación de Demonep (S/N)? Si"
+				demonep &
+				pid=$!			
+				printf "%s\n" "Demonep corriendo bajo el numero: $pid" 
+				logep -i "$0" "Demonep corriendo bajo el numero: $pid"
+				;;
+
+			n|N ) 
+				printf "%s\n" "$instrucciones_activar_demonio"
+				printf "%s\n" "$instrucciones_desactivar_demonio"
+				logep -i "$0" "¿Desea efectuar la activación de Demonep (S/N)? No"
+				;;
+
+			* ) 
+				printf "Ingrese una opción correcta\n">&2;;
+		esac
 	fi
-done
-
-#Inicializo variables de directorio
-while read -r linea
-do
-	nombreDirectorio=$( echo "$linea" | cut -d= -f1)
-	ruta=$( echo "$linea" | cut -d= -f2)
-	usuario=$(echo "$linea" | cut -d= -f3)
-	case $nombreDirectorio in
-		DIRBIN) 
-			export DIRBIN=$ruta
-			;;
-		DIRMAE)
-			export DIRMAE=$ruta
-			;;
-		DIRREC)
-			export DIRREC=$ruta
-			;;
-		DIROK) 
-			export DIROK=$ruta 
-			;;
-		DIRINFO)
-			export DIRINFO=$ruta 
-			;;
-		DIRLOG)
-			export DIRLOG=$ruta 
-			;;
-		GRUPO) 
-			export GRUPO=$ruta 
-			;;
-		DIRPROC)
-			export DIRPROC=$ruta 
-			;;
-	esac
-done <"$1"
-
-#en la variable de ambiente path agrego el directorio de ejecutables
-PATH="$PATH:$DIRBIN"
-
-#las variables se han inicalizado y los permisos de los arhcivos han sido fijados
-mensaje="Estado del Sistema: INICIALIZADO"
-printf "%s\n" "$mensaje"
-logep -i "$0" "$mensaje"
-
-#Pregunto por demonep
-read -p "¿Desea efectuar la activación de Demonep (S/N)?" opcion
-
-instrucciones_activar_demonio="Para activar el demonio corra comando demonep en background\n. Recibe como entrada los archivo maestros, tablas y el archivo novedades. Estos archivos se pueden encontrar en los directorios DIRMAE y DIRREC respectivamente\n"
-
-instrucciones_desactivar_demonio="Para desactivar demonio use el comando kill SIGTERM pid, donde pid es identificador del proceso, en caso de fallar use kill SIGKILL pid."
-
-case "$opcion" in
-	s|S ) 		
-		printf "%s\n" "$instrucciones_desactivar_demonio"
-		logep -i "$0" "¿Desea efectuar la activación de Demonep (S/N)? Si"
-		demonep &
-		pid=$!			
-		printf "%s\n" "Demonep corriendo bajo el numero: $pid" 
-		logep -i "$0" "Demonep corriendo bajo el numero: $pid"
-		;;
-
-	n|N ) 
-		printf "%s\n" "$instrucciones_activar_demonio"
-		printf "%s\n" "$instrucciones_desactivar_demonio"
-		logep -i "$0" "¿Desea efectuar la activación de Demonep (S/N)? No"
-		;;
-
-	* ) 
-		printf "Ingrese una opción correcta\n">&2;;
-esac
-
+fi
