@@ -341,20 +341,38 @@ echoes "Directorio de Archivos Rechazados: $ACTUALPATH/$DIRNOK"
 #ls $DIRNOK >> ./dirconf/instalep.log
 echoes "Estado de la instalacion: LISTA"
 echoes "Desea continuar con la instalacion? (Si - No)"
-read RESPONSE
 
-case "$RESPONSE" in
-	Si|si|SI ) INSTALLATIONOK=true;;
-esac
+RESPONSE=""
+while [ "$RESPONSE" != "Si" ] && [ "$RESPONSE" != "si" ] && [ "$RESPONSE" != "SI" ] && [ "$RESPONSE" != "No" ] && [ "$RESPONSE" != "NO" ] && [ "$RESPONSE" != "no" ]
+do
+	if [ "$RESPONSE" != "" ]
+	then	
+		echo "Debe ingresar Si o No.."
+	fi
+	read RESPONSE
+
+	case "$RESPONSE" in
+		Si|si|SI ) INSTALLATIONOK=true;;
+	esac
+done
+
 done
 
 echoes "Iniciando instalacion. Esta Ud. seguro? (Si - No)"
-read RESPONSE
 
-case "$RESPONSE" in
-	NO|no|No )	exit 0 ;;
-esac
+RESPONSE=""
+while [ "$RESPONSE" != "Si" ] && [ "$RESPONSE" != "si" ] && [ "$RESPONSE" != "SI" ] && [ "$RESPONSE" != "No" ] && [ "$RESPONSE" != "NO" ] && [ "$RESPONSE" != "no" ]
+do
+	if [ "$RESPONSE" != "" ]
+	then	
+		echo "Debe ingresar Si o No.."
+	fi	
+	read RESPONSE
 
+	case "$RESPONSE" in
+		NO|no|No )	exit 0 ;;
+	esac
+done
 
 #Creo los directorios
 echoes "Creando Estructuras de directorio. . . ."
