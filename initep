@@ -1,18 +1,19 @@
 #!/bin/bash
+# $0 no contiene ruta de script porque se inicializa con source, por eso la obtengo asi.
+declare -r DIR_SCRIPT=$(readlink -f ${BASH_SOURCE[0]})
 
-#incluyo funcion logep
-source ./logep
 
 #me fijo si el ambiente ya fue inicalizado, para eso, uso la variable SETEPLAM como flag
 if [ "$SETEPLAM" == SET ]
 then
 	mensaje="Ambiente ya inicializado, para reinicializar termine la sesión e ingrese nuevamente"
 	printf "%s\n" "$mensaje">&2
-	logep -e "$0" "$mensaje"
-	exit
+	./logep -e "$DIR_SCRIPT" "$mensaje"
+	exit -1
 fi
 
 export SETEPLAM=SET
+
 
 #Verifico permisos de escritura,lectura y ejecucion cuando corresponda
 
@@ -21,6 +22,8 @@ export SETEPLAM=SET
 
 #lista que contiene a los ejecutables, les voy a cambiar los permisos de lecutura y ejecucion
 files_ejecutables="logep instalep demonep"
+#lista que contiene los maestros
+files_maestros="provincias.csv centros.csv"
 
 #su primer parametro es una lista de los permisos a fijar, por ejemplo r w x
 #su segundo parametro es el nombre del archivo
@@ -35,7 +38,7 @@ fijar_permisos () {
 						r) permiso=lectura;;
 						x) permiso=ejecución;;
 					esac
-					printf "error, fallo al intentar fijar permiso de $permiso en archivo "$2", verificar si archivo existe o si el usario">&2
+					printf "error, fallo al intentar fijar permiso de $permiso en archivo "$2", verificar si archivo existe o si el usuario">&2
 					printf "tiene permitido cambiar permisos\n">&2
 					return -1
 				fi
@@ -58,6 +61,7 @@ do
 		exit -1
 	fi
 done
+
 
 #Inicializo variables de directorio
 while read -r linea
@@ -93,38 +97,48 @@ do
 	esac
 done <"$1"
 
+#permisos de archivos maestros (los agrego aca porque necesito la ruta que se carga en DIRMAE)
+for maestro in $files_maestros
+do
+	if ! fijar_permisos "r x" $DIRMAE"/"$maestro
+	then
+		exit -1
+	fi
+done
 #en la variable de ambiente path agrego el directorio de ejecutables
-PATH="$PATH:$DIRBIN"
+PATH=$PATH:"$DIRBIN"
 
 #las variables se han inicalizado y los permisos de los arhcivos han sido fijados
 mensaje="Estado del Sistema: INICIALIZADO"
 printf "%s\n" "$mensaje"
-logep -i "$0" "$mensaje"
+./logep -i "$DIR_SCRIPT" "$mensaje"
 
 #Pregunto por demonep
 read -p "¿Desea efectuar la activación de Demonep (S/N)?" opcion
 
-instrucciones_activar_demonio="Para activar el demonio corra comando demonep en background\n. Recibe como entrada los archivo maestros, tablas y el archivo novedades. Estos archivos se pueden encontrar en los directorios DIRMAE y DIRREC respectivamente\n"
+instrucciones_activar_demonio="Para activar el demonio corra comando demonep en background\n. Recibe como entrada los archivo maestros, tablas y el archivo
+			       novedades. Estos archivos se pueden encontrar en los directorios DIRMAE y DIRREC respectivamente\n"
 
-instrucciones_desactivar_demonio="Para desactivar demonio use el comando kill SIGTERM pid, donde pid es identificador del proceso, en caso de fallar use kill SIGKILL pid."
+instrcciones_desactivar_demonio="Para desactivar demonio use el comando kill SIGTERM pid, donde pid es identificador del proceso,
+				en caso de fallar use kill SIGKILL pid."
 
 case "$opcion" in
-	s|S ) 		
+	s|S ) 
 		printf "%s\n" "$instrucciones_desactivar_demonio"
-		logep -i "$0" "¿Desea efectuar la activación de Demonep (S/N)? Si"
-		demonep &
+		./logep -i "$DIR_SCRIPT" "¿Desea efectuar la activación de Demonep (S/N)? Si"
+		./demonep &
 		pid=$!			
 		printf "%s\n" "Demonep corriendo bajo el numero: $pid" 
-		logep -i "$0" "Demonep corriendo bajo el numero: $pid"
+		./logep -i "$DIR_SCRIPT" "Demonep corriendo bajo el numero: $pid"
 		;;
 
 	n|N ) 
 		printf "%s\n" "$instrucciones_activar_demonio"
 		printf "%s\n" "$instrucciones_desactivar_demonio"
-		logep -i "$0" "¿Desea efectuar la activación de Demonep (S/N)? No"
+		./logep -i "$DIR_SCRIPT" "¿Desea efectuar la activación de Demonep (S/N)? No"
 		;;
 
 	* ) 
-		printf "Ingrese una opción correcta\n">&2;;
+		printf "Opción inválida\n">&2;&
 esac
 
