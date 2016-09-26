@@ -3,12 +3,13 @@
 #Instalador
 #Seteo las carpetas necesarias para la instalacion.
 #Guardo el directorio padre. 
-DIRROOT="./$GRUPO03/"
+DIRROOT="./GRUPO03/"
 #Guardo la direccion de el archivo de configuracion
 DIRCONF=$DIRROOT"dirconf/"
-DIRLOG=$DIRCONF"installep.conf"
+DIRLOG=$DIRCONF"instalep.conf"
 
 #Creo las carpeta y el archivo de log.
+mkdir $DIRROOT
 mkdir $DIRCONF
 touch $DIRLOG
 
