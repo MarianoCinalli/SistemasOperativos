@@ -4,7 +4,7 @@
 #El log se hace en el archivo instalep.log en el directorio /dirconf
 #Creo el archivo de log
 touch ./dirconf/instalep.log
-
+ACTUALPATH=$(realpath ./)
 #Funcion para escribir en consola y grabar en el log en una sola linea.
 function echoes {
 	echo "$1"
@@ -19,6 +19,36 @@ function userInputIsInvalid() {
 		return "1"
 	else
 		return "0"
+	fi
+
+}
+
+#Funcion para la carga de nombres de carpetas.
+function userInput(){
+
+	echo "Defina el directorio de $2 ($ACTUALPATH/$1):"
+	read userInput
+
+	#Verifico que el input sea distinto del nombre reservado
+	userInputIsInvalid userInput
+	is_invalid=$?
+
+	while [ "$is_invalid" == "1" ]
+	do
+		echo "ERROR: El nombre dirconf esta reservado."
+		echo "Defina el directorio de $2 ($ACTUALPATH/$1):"
+		read userInput
+		userInputIsInvalid userInput
+		is_invalid=$?
+	
+	done
+
+	#Si el usuario ingresa un string vacio (apreta enter) dejo el valor por defecto.
+	if [ $userInput ] 
+	then 
+		funcOutput=$userInput
+	else
+		funcOutput=$1
 	fi
 
 }
@@ -50,20 +80,18 @@ then
 	echoes 'Sistema instalado'
 	old_IFS=$IFS
 	IFS=$'\n'
-	LINEAS=($(cat ./dirconf/instalep.conf))
 	IFS=$old_IFS
-	echoes "Directorio de Configuracion: ${LINEAS[0]}"
-	ls "./${LINEAS[0]}"
-        echoes "Directorio de Ejecutables: ${LINEAS[1]}"
-        ls "./${LINEAS[1]}"
-        echoes "Directorio de Maestros y Tablas: ${LINEAS[2]}"
-        ls "./${LINEAS[2]}"
-        echoes "Directorio de Recepcion de Novedades: ${LINEAS[3]}"
-        echoes "Directorio de Archivos Aceptados: ${LINEAS[4]}"
-	echoes "Directorio de Archivos Procesados: ${LINEAS[5]}"
-	echoes "Directorio de Archivos de Reportes: ${LINEAS[6]}"
-	echoes "Directorio de Archivos de Log: ${LINEAS[7]}"
-	echoes "Directorio de Archivos Rechazados: ${LINEAS[8]}"
+	echoes "Directorio de Configuracion: ($ACTUALPATH/dirconf)"
+        echoes "Directorio de Ejecutables: ($(cat ./dirconf/instalep.conf | grep DIRBIN= | awk -F '=' '{print$2}'))"
+        ls "$(cat ./dirconf/instalep.conf | grep DIRBIN= | awk -F '=' '{print$2}')"
+        echoes "Directorio de Maestros y Tablas: ($(cat ./dirconf/instalep.conf | grep DIRMAE= | awk -F '=' '{print$2}'))"
+        ls "$(cat ./dirconf/instalep.conf | grep DIRMAE= | awk -F '=' '{print$2}')"
+        echoes "Directorio de Recepcion de Novedades: ($(cat ./dirconf/instalep.conf | grep DIRREC= | awk -F '=' '{print$2}'))"
+        echoes "Directorio de Archivos Aceptados: ($(cat ./dirconf/instalep.conf | grep DIROK= | awk -F '=' '{print$2}'))"
+	echoes "Directorio de Archivos Procesados: ($(cat ./dirconf/instalep.conf | grep DIRPROC= | awk -F '=' '{print$2}'))"
+	echoes "Directorio de Archivos de Reportes: ($(cat ./dirconf/instalep.conf | grep DIRINFO= | awk -F '=' '{print$2}'))"
+	echoes "Directorio de Archivos de Log: ($(cat ./dirconf/instalep.conf | grep DIRLOG= | awk -F '=' '{print$2}'))"
+	echoes "Directorio de Archivos Rechazados: ($(cat ./dirconf/instalep.conf | grep DIRNOK= | awk -F '=' '{print$2}'))"
 	exit 0
 fi
 
@@ -75,210 +103,46 @@ clear
 userInput=""
 reservedName="dirconf"
 is_invalid="0"
-
+funcOutput=""
 # BIN --------------------------------------------------------------------------
-echoes "Defina el directorio de ejecutables ($DIRBIN):"
-read userInput
 
-#Verifico que el input sea distinto del nombre reservado
-userInputIsInvalid userInput
-is_invalid=$?
-
-while [ "$is_invalid" == "1" ]
-do
-	echoes "ERROR: El nombre dirconf esta reservado."
-	echoes "Defina el directorio de ejecutables ($DIRBIN):"
-	read userInput
-	userInputIsInvalid userInput
-	is_invalid=$?
-	
-done
-
-#Si el usuario ingresa un string vacio (apreta enter) dejo el valor por defecto.
-if [ $userInput ] 
-then 
-	DIRBIN=$userInput
-fi
+userInput $DIRBIN "ejecutables"
+DIRBIN=$funcOutput
 
 # MAE --------------------------------------------------------------------------
 
-echoes "Defina el directorio de maestros y tablas ($DIRMAE):"
-read userInput
-
-#Verifico que el input sea distinto del nombre reservado
-userInputIsInvalid userInput
-is_invalid=$?
-
-while [ "$is_invalid" == "1" ]
-do
-	echoes "ERROR: El nombre dirconf esta reservado."
-	echoes "Defina el directorio de maestros y tablas ($DIRMAE):"
-	read userInput
-	userInputIsInvalid userInput
-	is_invalid=$?
-	
-done
-
-#Si el usuario ingresa un string vacio (apreta enter) dejo el valor por defecto.
-if [ $userInput ] 
-then
-	DIRMAE=$userInput
-fi
+userInput $DIRMAE "maestros y tablas"
+DIRMAE=$funcOutput
 
 # REC --------------------------------------------------------------------------
 
-echoes "Defina el directorio de recepcion de novedades ($DIRREC):"
-read userInput
-
-#Verifico que el input sea distinto del nombre reservado
-userInputIsInvalid userInput
-is_invalid=$?
-
-while [ "$is_invalid" == "1" ]
-do
-	
-	echoes "ERROR: El nombre dirconf esta reservado."
-	echoes "Defina el directorio de recepcion de novedades ($DIRREC):"
-	read userInput
-	userInputIsInvalid userInput
-	is_invalid=$?
-	
-done
-
-#Si el usuario ingresa un string vacio (apreta enter) dejo el valor por defecto.
-if [ $userInput ] 
-then
-	DIRREC=$userInput
-fi
+userInput $DIRREC "recepcion de novedades"
+DIRREC=$funcOutput
 
 # OK ---------------------------------------------------------------------------
 
-echoes "Defina el directorio de Archivos Aceptados ($DIROK):"
-read userInput
-
-#Verifico que el input sea distinto del nombre reservado
-userInputIsInvalid userInput
-is_invalid=$?
-
-while [ "$is_invalid" == "1" ]
-do
-	
-	echoes "ERROR: El nombre dirconf esta reservado."
-	echoes "Defina el directorio de Archivos Aceptados ($DIROK):"
-	read userInput
-	userInputIsInvalid userInput
-	is_invalid=$?
-	
-done
-
-#Si el usuario ingresa un string vacio (apreta enter) dejo el valor por defecto.
-if [ $userInput ] 
-then
-	DIROK=$userInput
-fi
+userInput $DIROK "archivos aceptados"
+DIROK=$funcOutput
 
 # PROC -------------------------------------------------------------------------
 
-echoes "Defina el directorio de Archivos Aceptados ($DIRPROC):"
-read userInput
-
-#Verifico que el input sea distinto del nombre reservado
-userInputIsInvalid userInput
-is_invalid=$?
-
-while [ "$is_invalid" == "1" ]
-do
-	
-	echoes "ERROR: El nombre dirconf esta reservado."
-	echoes "Defina el directorio de Archivos Aceptados ($DIRPROC):"
-	read userInput
-	userInputIsInvalid userInput
-	is_invalid=$?
-	
-done
-
-#Si el usuario ingresa un string vacio (apreta enter) dejo el valor por defecto.
-if [ $userInput ] 
-then
-	DIRPROC=$userInput
-fi
+userInput $DIRPROC "archivos procesados"
+DIRPROC=$funcOutput
 
 # INFO -------------------------------------------------------------------------
 
-echoes "Defina el directorio de Reportes ($DIRINFO):"
-read userInput
-
-#Verifico que el input sea distinto del nombre reservado
-userInputIsInvalid userInput
-is_invalid=$?
-
-while [ "$is_invalid" == "1" ]
-do
-	
-	echoes "ERROR: El nombre dirconf esta reservado."
-	echoes "Defina el directorio de Reportes ($DIRINFO):"
-	read userInput
-	userInputIsInvalid userInput
-	is_invalid=$?
-	
-done
-
-#Si el usuario ingresa un string vacio (apreta enter) dejo el valor por defecto.
-if [ $userInput ] 
-then
-	DIRINFO=$userInput
-fi
+userInput $DIRINFO "reportes"
+DIRINFO=$funcOutput
 
 # LOG --------------------------------------------------------------------------
 
-echoes "Defina el directorio de log ($DIRLOG):"
-read userInput
-
-#Verifico que el input sea distinto del nombre reservado
-userInputIsInvalid userInput
-is_invalid=$?
-
-while [ "$is_invalid" == "1" ]
-do
-	
-	echoes "ERROR: El nombre dirconf esta reservado."
-	echoes "Defina el directorio de log ($DIRLOG):"
-	read userInput
-	userInputIsInvalid userInput
-	is_invalid=$?
-	
-done
-
-#Si el usuario ingresa un string vacio (apreta enter) dejo el valor por defecto.
-if [ $userInput ] 
-then
-	DIRLOG=$userInput
-fi
+userInput $DIRLOG "log"
+DIRLOG=$funcOutput
 
 # NOK --------------------------------------------------------------------------
 
-echoes "Defina el directorio de rechazados ($DIRNOK):"
-read userInput
-
-#Verifico que el input sea distinto del nombre reservado
-userInputIsInvalid userInput
-is_invalid=$?
-
-while [ "$is_invalid" == "1" ]
-do
-	echoes "ERROR: El nombre dirconf esta reservado."
-	echoes "Defina el directorio de rechazados ($DIRNOK):"
-	read userInput
-	userInputIsInvalid userInput
-	is_invalid=$?
-	
-done
-
-#Si el usuario ingresa un string vacio (apreta enter) dejo el valor por defecto.
-if [ $userInput ] 
-then
-	DIRNOK=$userInput
-fi
+userInput $DIRNOK "rechazados"
+DIRNOK=$funcOutput
 
 # ------------------------------------------------------------------------------
 
@@ -314,49 +178,67 @@ done
 clear
 
 #Muestro y grabo configuracion final y archivos.
-echoes "Directorio de Configuracion: $DIRCONF"
+echoes "Directorio de Configuracion: $ACTUALPATH/$DIRCONF"
 #ls $DIRCONF
 #ls $DIRCONF >> ./dirconf/instalep.log
-echoes "Directorio de Ejecutables: $DIRBIN"
+echoes "Directorio de Ejecutables: $ACTUALPATH/$DIRBIN"
 #ls $DIRBIN
 #ls $DIRBIN >> ./dirconf/instalep.log
-echoes "Directorio de Maestros y Tablas: $DIRMAE"
+echoes "Directorio de Maestros y Tablas: $ACTUALPATH/$DIRMAE"
 #ls $DIRMAE
 #ls $DIRMAE >> ./dirconf/instalep.log
-echoes "Directorio de Recepcion de Novedades: $DIRREC"
+echoes "Directorio de Recepcion de Novedades: $ACTUALPATH/$DIRREC"
 #ls $DIRREC
 #ls $DIRREC >> ./dirconf/instalep.log
-echoes "Directorio de Archivos Aceptados: $DIROK"
+echoes "Directorio de Archivos Aceptados: $ACTUALPATH/$DIROK"
 #ls $DIROK
 #ls $DIROK >> ./dirconf/instalep.log
-echoes "Directorio de Archivos Procesados: $DIRPROC"
+echoes "Directorio de Archivos Procesados: $ACTUALPATH/$DIRPROC"
 #ls $DIRPROC
 #ls $DIRPROC >> ./dirconf/instalep.log
-echoes "Directorio de Archivos de Reportes: $DIRINFO"
+echoes "Directorio de Archivos de Reportes: $ACTUALPATH/$DIRINFO"
 #ls $DIRINFO
 #ls $DIRINFO >> ./dirconf/instalep.log
-echoes "Directorio de Archivos de Log: $DIRLOG"
+echoes "Directorio de Archivos de Log: $ACTUALPATH/$DIRLOG"
 #ls $DIRLOG
 #ls $DIRLOG >> ./dirconf/instalep.log
-echoes "Directorio de Archivos Rechazados: $DIRNOK"
+echoes "Directorio de Archivos Rechazados: $ACTUALPATH/$DIRNOK"
 #ls $DIRNOK
 #ls $DIRNOK >> ./dirconf/instalep.log
 echoes "Estado de la instalacion: LISTA"
 echoes "Desea continuar con la instalacion? (Si - No)"
-read RESPONSE
 
-case "$RESPONSE" in
-	Si|si|SI ) INSTALLATIONOK=true;;
-esac
+RESPONSE=""
+while [ "$RESPONSE" != "Si" ] && [ "$RESPONSE" != "si" ] && [ "$RESPONSE" != "SI" ] && [ "$RESPONSE" != "No" ] && [ "$RESPONSE" != "NO" ] && [ "$RESPONSE" != "no" ]
+do
+	if [ "$RESPONSE" != "" ]
+	then	
+		echo "Debe ingresar Si o No.."
+	fi
+	read RESPONSE
+
+	case "$RESPONSE" in
+		Si|si|SI ) INSTALLATIONOK=true;;
+	esac
+done
+
 done
 
 echoes "Iniciando instalacion. Esta Ud. seguro? (Si - No)"
-read RESPONSE
 
-case "$RESPONSE" in
-	NO|no|No )	exit 0 ;;
-esac
+RESPONSE=""
+while [ "$RESPONSE" != "Si" ] && [ "$RESPONSE" != "si" ] && [ "$RESPONSE" != "SI" ] && [ "$RESPONSE" != "No" ] && [ "$RESPONSE" != "NO" ] && [ "$RESPONSE" != "no" ]
+do
+	if [ "$RESPONSE" != "" ]
+	then	
+		echo "Debe ingresar Si o No.."
+	fi	
+	read RESPONSE
 
+	case "$RESPONSE" in
+		NO|no|No )	exit 0 ;;
+	esac
+done
 
 #Creo los directorios
 echoes "Creando Estructuras de directorio. . . ."
@@ -371,28 +253,37 @@ mkdir -p $DIRLOG
 mkdir -p $DIRNOK
 
 #Mover programas y funciones
-#Falta poner scripts en DIRBIN
 echoes "Instalando Programas y Funciones"
+DIRECTORIOBINARIOS="./paraMoverABin"
+for file in "$DIRECTORIOBINARIOS"/*
+do
+  cp $file $DIRBIN
+done
 
 #Mover los archivos maestros y tablas
-#Falta poner maestros y tablas en DIRMAE
 echoes "Instalando Archivos Maestros y Tablas"
+DIRECTORIODATOS="./datos"
+for file in "$DIRECTORIODATOS"/*
+do
+  cp $file $DIRMAE
+done
 
 # Grabo en el archivo instalep.conf en /dirconf un registro por cada variable
 # configurada
 # Primero los nombres de los directorios en el orden en el que son solicitados
 # y luego un registro con el espacio requerido solicitado.
 touch ./dirconf/instalep.conf
+ACTUALDATE=$(date +"%d/%m/%Y %T")
 cd dirconf
-echo "$DIRBIN" >> instalep.conf
-echo "$DIRMAE" >> instalep.conf
-echo "$DIRREC" >> instalep.conf
-echo "$DIROK" >> instalep.conf
-echo "$DIRPROC" >> instalep.conf
-echo "$DIRINFO" >> instalep.conf
-echo "$DIRLOG" >> instalep.conf
-echo "$DIRNOK" >> instalep.conf
-echo "$SPACE" >> instalep.conf
+echo "DIRBIN=$ACTUALPATH/$DIRBIN=$USER=$ACTUALDATE" >> instalep.conf
+echo "DIRMAE=$ACTUALPATH/$DIRMAE=$USER=$ACTUALDATE" >> instalep.conf
+echo "DIRREC=$ACTUALPATH/$DIRREC=$USER=$ACTUALDATE" >> instalep.conf
+echo "DIROK=$ACTUALPATH/$DIROK=$USER=$ACTUALDATE" >> instalep.conf
+echo "DIRPROC=$ACTUALPATH/$DIRPROC=$USER=$ACTUALDATE" >> instalep.conf
+echo "DIRINFO=$ACTUALPATH/$DIRINFO=$USER=$ACTUALDATE" >> instalep.conf
+echo "DIRLOG=$ACTUALPATH/$DIRLOG=$USER=$ACTUALDATE" >> instalep.conf
+echo "DIRNOK=$ACTUALPATH/$DIRNOK=$USER=$ACTUALDATE" >> instalep.conf
+echo "DIRSPACE=$SPACE=$USER=$ACTUALDATE" >> instalep.conf
 cd ..
 
 echoes "Actualizando la configuracion del sistema"

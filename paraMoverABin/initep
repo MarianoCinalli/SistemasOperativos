@@ -30,7 +30,7 @@ do
 	#lista que contiene a los ejecutables, les voy a cambiar los permisos de lecutura y ejecucion
 	files_ejecutables="logep instalep demonep"
 	#lista que contiene los maestros
-	files_maestros="provincias.csv centros.csv"
+	files_maestros="provincias.csv centros.csv trimestres.csv"
 
 	#su primer parametro es una lista de los permisos a fijar, por ejemplo r w x
 	#su segundo parametro es el nombre del archivo
@@ -123,7 +123,7 @@ do
 	#Pregunto por demonep
 	read -p "¿Desea efectuar la activación de Demonep (S/N)?" opcion
 
-	instrucciones_activar_demonio="Para activar el demonio corra comando demonep en background\n. Recibe como entrada los archivo maestros, tablas y el archivo novedades. Estos archivos se pueden encontrar en los directorios DIRMAE y DIRREC respectivamente"
+	instrucciones_activar_demonio="Para activar el demonio corra comando demonep en background\n. Recibe como entrada los archivo maestros, tablas y el archivo novedades. Estos archivos se pueden encontrar en los directorios mae y rec respectivamente"
 
 	instrucciones_desactivar_demonio="Para desactivar demonio use el comando kill SIGTERM pid, donde pid es identificador del proceso, en caso de fallar use kill SIGKILL pid."
 
