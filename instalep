@@ -255,8 +255,11 @@ mkdir -p $DIRNOK
 #Mover programas y funciones
 #Falta poner scripts en DIRBIN
 echoes "Instalando Programas y Funciones"
-cp initep $DIRBIN
-cp logep $DIRBIN
+DIRECTORIO="./paraMoverABin"
+for file in "$DIRECTORIO"/*
+do
+  cp $file $DIRBIN
+done
 
 #Mover los archivos maestros y tablas
 #Falta poner maestros y tablas en DIRMAE
