@@ -58,7 +58,7 @@ do
 	#Creo una lista para enumerar los archivos ejecutables
 
 	#lista que contiene a los ejecutables, les voy a cambiar los permisos de lecutura y ejecucion
-	files_ejecutables="logep instalep demonep"
+	files_ejecutables="logep demonep"
 	#lista que contiene los maestros
 	files_maestros="provincias.csv centros.csv trimestres.csv"
 
