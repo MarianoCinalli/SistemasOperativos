@@ -23,6 +23,36 @@ function userInputIsInvalid() {
 
 }
 
+#Funcion para la carga de nombres de carpetas.
+function userInput(){
+
+	echo "Defina el directorio de $2 ($ACTUALPATH/$1):"
+	read userInput
+
+	#Verifico que el input sea distinto del nombre reservado
+	userInputIsInvalid userInput
+	is_invalid=$?
+
+	while [ "$is_invalid" == "1" ]
+	do
+		echo "ERROR: El nombre dirconf esta reservado."
+		echo "Defina el directorio de $2 ($ACTUALPATH/$1):"
+		read userInput
+		userInputIsInvalid userInput
+		is_invalid=$?
+	
+	done
+
+	#Si el usuario ingresa un string vacio (apreta enter) dejo el valor por defecto.
+	if [ $userInput ] 
+	then 
+		funcOutput=$userInput
+	else
+		funcOutput=$1
+	fi
+
+}
+
 #Defino variables para guardar los nombres de los directorios
 DIRCONF="dirconf"
 DIRBIN="bin"
@@ -73,210 +103,46 @@ clear
 userInput=""
 reservedName="dirconf"
 is_invalid="0"
-
+funcOutput=""
 # BIN --------------------------------------------------------------------------
-echoes "Defina el directorio de ejecutables ($ACTUALPATH/$DIRBIN):"
-read userInput
 
-#Verifico que el input sea distinto del nombre reservado
-userInputIsInvalid userInput
-is_invalid=$?
-
-while [ "$is_invalid" == "1" ]
-do
-	echoes "ERROR: El nombre dirconf esta reservado."
-	echoes "Defina el directorio de ejecutables ($ACTUALPATH/$DIRBIN):"
-	read userInput
-	userInputIsInvalid userInput
-	is_invalid=$?
-	
-done
-
-#Si el usuario ingresa un string vacio (apreta enter) dejo el valor por defecto.
-if [ $userInput ] 
-then 
-	DIRBIN=$userInput
-fi
+userInput $DIRBIN "ejecutables"
+DIRBIN=$funcOutput
 
 # MAE --------------------------------------------------------------------------
 
-echoes "Defina el directorio de maestros y tablas ($ACTUALPATH/$DIRMAE):"
-read userInput
-
-#Verifico que el input sea distinto del nombre reservado
-userInputIsInvalid userInput
-is_invalid=$?
-
-while [ "$is_invalid" == "1" ]
-do
-	echoes "ERROR: El nombre dirconf esta reservado."
-	echoes "Defina el directorio de maestros y tablas ($ACTUALPATH/$DIRMAE):"
-	read userInput
-	userInputIsInvalid userInput
-	is_invalid=$?
-	
-done
-
-#Si el usuario ingresa un string vacio (apreta enter) dejo el valor por defecto.
-if [ $userInput ] 
-then
-	DIRMAE=$userInput
-fi
+userInput $DIRMAE "maestros y tablas"
+DIRMAE=$funcOutput
 
 # REC --------------------------------------------------------------------------
 
-echoes "Defina el directorio de recepcion de novedades ($ACTUALPATH/$DIRREC):"
-read userInput
-
-#Verifico que el input sea distinto del nombre reservado
-userInputIsInvalid userInput
-is_invalid=$?
-
-while [ "$is_invalid" == "1" ]
-do
-	
-	echoes "ERROR: El nombre dirconf esta reservado."
-	echoes "Defina el directorio de recepcion de novedades ($ACTUALPATH/$DIRREC):"
-	read userInput
-	userInputIsInvalid userInput
-	is_invalid=$?
-	
-done
-
-#Si el usuario ingresa un string vacio (apreta enter) dejo el valor por defecto.
-if [ $userInput ] 
-then
-	DIRREC=$userInput
-fi
+userInput $DIRREC "recepcion de novedades"
+DIRREC=$funcOutput
 
 # OK ---------------------------------------------------------------------------
 
-echoes "Defina el directorio de Archivos Aceptados ($ACTUALPATH/$DIROK):"
-read userInput
-
-#Verifico que el input sea distinto del nombre reservado
-userInputIsInvalid userInput
-is_invalid=$?
-
-while [ "$is_invalid" == "1" ]
-do
-	
-	echoes "ERROR: El nombre dirconf esta reservado."
-	echoes "Defina el directorio de Archivos Aceptados ($ACTUALPATH/$DIROK):"
-	read userInput
-	userInputIsInvalid userInput
-	is_invalid=$?
-	
-done
-
-#Si el usuario ingresa un string vacio (apreta enter) dejo el valor por defecto.
-if [ $userInput ] 
-then
-	DIROK=$userInput
-fi
+userInput $DIROK "archivos aceptados"
+DIROK=$funcOutput
 
 # PROC -------------------------------------------------------------------------
 
-echoes "Defina el directorio de Archivos Aceptados ($ACTUALPATH/$DIRPROC):"
-read userInput
-
-#Verifico que el input sea distinto del nombre reservado
-userInputIsInvalid userInput
-is_invalid=$?
-
-while [ "$is_invalid" == "1" ]
-do
-	
-	echoes "ERROR: El nombre dirconf esta reservado."
-	echoes "Defina el directorio de Archivos Aceptados ($ACTUALPATH/$DIRPROC):"
-	read userInput
-	userInputIsInvalid userInput
-	is_invalid=$?
-	
-done
-
-#Si el usuario ingresa un string vacio (apreta enter) dejo el valor por defecto.
-if [ $userInput ] 
-then
-	DIRPROC=$userInput
-fi
+userInput $DIRPROC "archivos procesados"
+DIRPROC=$funcOutput
 
 # INFO -------------------------------------------------------------------------
 
-echoes "Defina el directorio de Reportes ($ACTUALPATH/$DIRINFO):"
-read userInput
-
-#Verifico que el input sea distinto del nombre reservado
-userInputIsInvalid userInput
-is_invalid=$?
-
-while [ "$is_invalid" == "1" ]
-do
-	
-	echoes "ERROR: El nombre dirconf esta reservado."
-	echoes "Defina el directorio de Reportes ($ACTUALPATH/$DIRINFO):"
-	read userInput
-	userInputIsInvalid userInput
-	is_invalid=$?
-	
-done
-
-#Si el usuario ingresa un string vacio (apreta enter) dejo el valor por defecto.
-if [ $userInput ] 
-then
-	DIRINFO=$userInput
-fi
+userInput $DIRINFO "reportes"
+DIRINFO=$funcOutput
 
 # LOG --------------------------------------------------------------------------
 
-echoes "Defina el directorio de log ($ACTUALPATH/$DIRLOG):"
-read userInput
-
-#Verifico que el input sea distinto del nombre reservado
-userInputIsInvalid userInput
-is_invalid=$?
-
-while [ "$is_invalid" == "1" ]
-do
-	
-	echoes "ERROR: El nombre dirconf esta reservado."
-	echoes "Defina el directorio de log ($ACTUALPATH/$DIRLOG):"
-	read userInput
-	userInputIsInvalid userInput
-	is_invalid=$?
-	
-done
-
-#Si el usuario ingresa un string vacio (apreta enter) dejo el valor por defecto.
-if [ $userInput ] 
-then
-	DIRLOG=$userInput
-fi
+userInput $DIRLOG "log"
+DIRLOG=$funcOutput
 
 # NOK --------------------------------------------------------------------------
 
-echoes "Defina el directorio de rechazados ($ACTUALPATH/$DIRNOK):"
-read userInput
-
-#Verifico que el input sea distinto del nombre reservado
-userInputIsInvalid userInput
-is_invalid=$?
-
-while [ "$is_invalid" == "1" ]
-do
-	echoes "ERROR: El nombre dirconf esta reservado."
-	echoes "Defina el directorio de rechazados ($ACTUALPATH/$DIRNOK):"
-	read userInput
-	userInputIsInvalid userInput
-	is_invalid=$?
-	
-done
-
-#Si el usuario ingresa un string vacio (apreta enter) dejo el valor por defecto.
-if [ $userInput ] 
-then
-	DIRNOK=$userInput
-fi
+userInput $DIRNOK "rechazados"
+DIRNOK=$funcOutput
 
 # ------------------------------------------------------------------------------
 
