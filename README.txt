@@ -1,5 +1,5 @@
 Instalación:
-1) Abra una nueva terminal (ctrl + alt + t)
+1) Abra una nueva terminal (ctrl + alt + t) 
 2) Ejecute el comando instalep. 
 3) Especifique la ruta de los directorios que se solicitan, en caso de no especificar directorio se asignará la ruta predeterminada.
 4) Indique el espacio mínimo libre requerido en el directorio para la recepción de novedades .
