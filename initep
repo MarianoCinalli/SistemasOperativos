@@ -2,6 +2,10 @@
 #como se va a ejecutar sin shell hijo, y necesito mostrar mensaje de error cuando sucede algo mal, no puedo usar exit
 #y me parece mas prolijo encerrar todo en un bucle while y usar la sentecia break para evitar tener muchos if y else anidados
 
+
+DIR_SCRIPT=$(readlink -f ${BASH_SOURCE[0]})
+source ./logep
+
 while true 
 do
 
@@ -11,15 +15,11 @@ do
 	then
 		mensaje="Ambiente ya inicializado, para reinicializar termine la sesión e ingrese nuevamente"
 		printf "%s\n" "$mensaje">&2
-		./logep -e "$DIR_SCRIPT" "$mensaje"
+		logep -e "$DIR_SCRIPT" "$mensaje"
 		break
 	fi
 
 	export SETEPLAM=SET
-
-	#----- Marcelo movi esto abajo para que no se inicialize dos veces cuando se ejecuta dos veces initep	
-	# $0 no contiene ruta de script porque se inicializa con source, por eso la obtengo asi.
-	declare -r DIR_SCRIPT=$(readlink -f ${BASH_SOURCE[0]})
 
 
 	#Verifico permisos de escritura,lectura y ejecucion cuando corresponda
@@ -107,7 +107,7 @@ do
 	#permisos de archivos maestros (los agrego aca porque necesito la ruta que se carga en DIRMAE)
 	for maestro in $files_maestros
 	do
-		if ! fijar_permisos "r x" $DIRMAE"/"$maestro
+		if ! fijar_permisos r $DIRMAE"/"$maestro
 		then
 			break
 		fi
@@ -118,7 +118,7 @@ do
 	#las variables se han inicalizado y los permisos de los arhcivos han sido fijados
 	mensaje="Estado del Sistema: INICIALIZADO"
 	printf "%s\n" "$mensaje"
-	./logep -i "$DIR_SCRIPT" "$mensaje"
+	logep -i "$DIR_SCRIPT" "$mensaje"
 
 	#Pregunto por demonep
 	read -p "¿Desea efectuar la activación de Demonep (S/N)?" opcion
@@ -130,17 +130,17 @@ do
 	case "$opcion" in
 		s|S ) 
 			printf "%s\n" "$instrucciones_desactivar_demonio"
-			./logep -i "$DIR_SCRIPT" "¿Desea efectuar la activación de Demonep (S/N)? Si"
+			logep -i "$DIR_SCRIPT" "¿Desea efectuar la activación de Demonep (S/N)? Si"
 			./demonep &
 			pid=$!			
 			printf "%s\n" "Demonep corriendo bajo el numero: $pid" 
-			./logep -i "$DIR_SCRIPT" "Demonep corriendo bajo el numero: $pid"
+			logep -i "$DIR_SCRIPT" "Demonep corriendo bajo el numero: $pid"
 			;;
 
 		n|N ) 
 			printf "%s\n" "$instrucciones_activar_demonio"
 			printf "%s\n" "$instrucciones_desactivar_demonio"
-			./logep -i "$DIR_SCRIPT" "¿Desea efectuar la activación de Demonep (S/N)? No"
+			logep -i "$DIR_SCRIPT" "¿Desea efectuar la activación de Demonep (S/N)? No"
 			;;
 
 		* ) 
