@@ -1,43 +1,13 @@
 #!/bin/bash
-
-#su primer parametro es una lista de los permisos a fijar, por ejemplo r w x
-#su segundo parametro es el nombre del archivo
-
-#guardo nombre del comando
-
-fijar_permisos () {
-	for permiso in $1
-	do
-		if [ ! -$permiso "$2" ]
-		then
-			if ! chmod -f +$permiso "$2"
-			then 
-				case $permiso in
-					r) permiso=lectura;;
-					x) permiso=ejecución;;
-				esac
-				printf "initep: error, fallo al intentar fijar permiso de $permiso en archivo "$2", verificar si archivo existe o si el usuario ">&2
-				printf "%s\n" "tiene permitido cambiar permisos">&2
-				return -1
-			fi
-		fi
-	done
-	return 0
-}
-
-source ./logep
-
 #como se va a ejecutar sin shell hijo, y necesito mostrar mensaje de error cuando sucede algo mal, no puedo usar exit
 #y me parece mas prolijo encerrar todo en un bucle while y usar la sentecia break para evitar tener muchos if y else anidados
 
+
+DIR_SCRIPT=$(readlink -f ${BASH_SOURCE[0]})
+source ./logep
+
 while true 
 do
-
-	#permisos del archivo de configuracion
-	if ! fijar_permisos r "$1"
-	then
-		break
-	fi
 
 
 	#me fijo si el ambiente ya fue inicalizado, para eso, uso la variable SETEPLAM como flag
@@ -45,7 +15,7 @@ do
 	then
 		mensaje="Ambiente ya inicializado, para reinicializar termine la sesión e ingrese nuevamente"
 		printf "%s\n" "$mensaje">&2
-		logep -e "initep" "$mensaje"
+		logep -e "$DIR_SCRIPT" "$mensaje"
 		break
 	fi
 
@@ -58,16 +28,44 @@ do
 	#Creo una lista para enumerar los archivos ejecutables
 
 	#lista que contiene a los ejecutables, les voy a cambiar los permisos de lecutura y ejecucion
-	files_ejecutables="logep demonep"
+	files_ejecutables="logep instalep demonep"
 	#lista que contiene los maestros
 	files_maestros="provincias.csv centros.csv trimestres.csv"
+
+	#su primer parametro es una lista de los permisos a fijar, por ejemplo r w x
+	#su segundo parametro es el nombre del archivo
+	fijar_permisos () {
+		for permiso in $1
+		do
+			if [ ! -$permiso "$2" ]
+			then
+					if ! chmod -f +$permiso "$2"
+					then 
+						case $permiso in
+							r) permiso=lectura;;
+							x) permiso=ejecución;;
+						esac
+						printf "error, fallo al intentar fijar permiso de $permiso en archivo "$2", verificar si archivo existe o si el usuario">&2
+						printf "tiene permitido cambiar permisos\n">&2
+						return -1
+					fi
+			fi
+		done
+		return 0
+	}
+
+	#permisos del archivo de configuracion
+	if ! fijar_permisos r "$1"
+	then
+		break
+	fi
 
 	#permisos de ejecutables
 	for ejecutable in $files_ejecutables
 	do
 		if ! fijar_permisos "r x" "$ejecutable"
 		then
-			break 2
+			break
 		fi
 	done
 
@@ -109,9 +107,9 @@ do
 	#permisos de archivos maestros (los agrego aca porque necesito la ruta que se carga en DIRMAE)
 	for maestro in $files_maestros
 	do
-		if ! fijar_permisos r "${DIRMAE}/${maestro}"
+		if ! fijar_permisos r $DIRMAE"/"$maestro
 		then
-			break 2
+			break
 		fi
 	done
 	#en la variable de ambiente path agrego el directorio de ejecutables
@@ -120,7 +118,7 @@ do
 	#las variables se han inicalizado y los permisos de los arhcivos han sido fijados
 	mensaje="Estado del Sistema: INICIALIZADO"
 	printf "%s\n" "$mensaje"
-	logep -i "initep" "$mensaje"
+	logep -i "$DIR_SCRIPT" "$mensaje"
 
 	#Pregunto por demonep
 	read -p "¿Desea efectuar la activación de Demonep (S/N)?" opcion
@@ -132,17 +130,17 @@ do
 	case "$opcion" in
 		s|S ) 
 			printf "%s\n" "$instrucciones_desactivar_demonio"
-			logep -i "initep" "¿Desea efectuar la activación de Demonep (S/N)? Si"
+			logep -i "$DIR_SCRIPT" "¿Desea efectuar la activación de Demonep (S/N)? Si"
 			./demonep &
 			pid=$!			
 			printf "%s\n" "Demonep corriendo bajo el numero: $pid" 
-			logep -i "initep" "Demonep corriendo bajo el numero: $pid"
+			logep -i "$DIR_SCRIPT" "Demonep corriendo bajo el numero: $pid"
 			;;
 
 		n|N ) 
 			printf "%s\n" "$instrucciones_activar_demonio"
 			printf "%s\n" "$instrucciones_desactivar_demonio"
-			logep -i "initep" "¿Desea efectuar la activación de Demonep (S/N)? No"
+			logep -i "$DIR_SCRIPT" "¿Desea efectuar la activación de Demonep (S/N)? No"
 			;;
 
 		* ) 
