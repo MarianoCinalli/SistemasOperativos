@@ -3,24 +3,24 @@
 #y me parece mas prolijo encerrar todo en un bucle while y usar la sentecia break para evitar tener muchos if y else anidados
 
 
-DIR_SCRIPT=$(readlink -f ${BASH_SOURCE[0]})
 source ./logep
 
 while true 
 do
-
+	#esta variable sirve para detectar si hubo un error, como, por ejemplo, no se pudo fijar los permisos de un archivo
+	#se inicializa en true y luego se cambia a false si todo sale bien, de lo contrario no se cambia
+	ERROR=true
 
 	#me fijo si el ambiente ya fue inicalizado, para eso, uso la variable SETEPLAM como flag
 	if [ "$SETEPLAM" == SET ]
 	then
 		mensaje="Ambiente ya inicializado, para reinicializar termine la sesión e ingrese nuevamente"
 		printf "%s\n" "$mensaje">&2
-		logep -e "$DIR_SCRIPT" "$mensaje"
+		logep -e "initep" "$mensaje"
 		break
 	fi
-
+	
 	export SETEPLAM=SET
-
 
 	#Verifico permisos de escritura,lectura y ejecucion cuando corresponda
 
@@ -28,7 +28,7 @@ do
 	#Creo una lista para enumerar los archivos ejecutables
 
 	#lista que contiene a los ejecutables, les voy a cambiar los permisos de lecutura y ejecucion
-	files_ejecutables="logep instalep demonep"
+	files_ejecutables="logep  demonep"
 	#lista que contiene los maestros
 	files_maestros="provincias.csv centros.csv trimestres.csv"
 
@@ -55,7 +55,7 @@ do
 	}
 
 	#permisos del archivo de configuracion
-	if ! fijar_permisos r "$1"
+	if ! fijar_permisos r "../dirconf/instalep.conf"
 	then
 		break
 	fi
@@ -65,10 +65,9 @@ do
 	do
 		if ! fijar_permisos "r x" "$ejecutable"
 		then
-			break
+			break 2
 		fi
 	done
-
 
 	#Inicializo variables de directorio
 	while read -r linea
@@ -107,9 +106,9 @@ do
 	#permisos de archivos maestros (los agrego aca porque necesito la ruta que se carga en DIRMAE)
 	for maestro in $files_maestros
 	do
-		if ! fijar_permisos r $DIRMAE"/"$maestro
+		if ! fijar_permisos r "${DIRMAE}/${maestro}"
 		then
-			break
+			break 2
 		fi
 	done
 	#en la variable de ambiente path agrego el directorio de ejecutables
@@ -118,7 +117,7 @@ do
 	#las variables se han inicalizado y los permisos de los arhcivos han sido fijados
 	mensaje="Estado del Sistema: INICIALIZADO"
 	printf "%s\n" "$mensaje"
-	logep -i "$DIR_SCRIPT" "$mensaje"
+	logep -i "initep" "$mensaje"
 
 	#Pregunto por demonep
 	read -p "¿Desea efectuar la activación de Demonep (S/N)?" opcion
@@ -130,22 +129,34 @@ do
 	case "$opcion" in
 		s|S ) 
 			printf "%s\n" "$instrucciones_desactivar_demonio"
-			logep -i "$DIR_SCRIPT" "¿Desea efectuar la activación de Demonep (S/N)? Si"
+			logep -i "initep" "¿Desea efectuar la activación de Demonep (S/N)? Si"
 			./demonep &
 			pid=$!			
 			printf "%s\n" "Demonep corriendo bajo el numero: $pid" 
-			logep -i "$DIR_SCRIPT" "Demonep corriendo bajo el numero: $pid"
+			logep -i "initep" "Demonep corriendo bajo el numero: $pid"
 			;;
 
 		n|N ) 
 			printf "%s\n" "$instrucciones_activar_demonio"
 			printf "%s\n" "$instrucciones_desactivar_demonio"
-			logep -i "$DIR_SCRIPT" "¿Desea efectuar la activación de Demonep (S/N)? No"
+			logep -i "initep" "¿Desea efectuar la activación de Demonep (S/N)? No"
 			;;
 
 		* ) 
 			printf "Opción inválida\n">&2;&
 	esac
+	#no hubo problemas si llego hasta aqui asi que
+	ERROR=false
 	break
 done
 
+#si hubo un error, limpio el ambiente borrando todas las variables incluyendo SETEPLAM
+#lo hago porque seria raro que saliera un mensaje de error y las variables quedaran inicializadas. El usario no confiaria en ellas.
+if [ ERROR == true ]
+then
+	variables="SETEPLAM DIRBIN DIRMAE DIRRECK DIROCK DIRINFO DIRLOG GRUPO DIRPROC"
+	for variable in $variables
+	do
+		unset "$variable"
+	done
+fi
