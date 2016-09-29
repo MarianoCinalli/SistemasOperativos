@@ -1,74 +1,44 @@
 #!/bin/bash
-#como se va a ejecutar sin shell hijo, y necesito mostrar mensaje de error cuando sucede algo mal, no puedo usar exit
-#y me parece mas prolijo encerrar todo en un bucle while y usar la sentecia break para evitar tener muchos if y else anidados
-
-
 source ./logep
 
-while true 
-do
-	#esta variable sirve para detectar si hubo un error, como, por ejemplo, no se pudo fijar los permisos de un archivo
-	#se inicializa en true y luego se cambia a false si todo sale bien, de lo contrario no se cambia
-	ERROR=true
-
-	#me fijo si el ambiente ya fue inicalizado, para eso, uso la variable SETEPLAM como flag
-	if [ "$SETEPLAM" == SET ]
-	then
-		mensaje="Ambiente ya inicializado, para reinicializar termine la sesión e ingrese nuevamente"
-		printf "%s\n" "$mensaje">&2
-		logep -e "initep" "$mensaje"
-		break
-	fi
-	
-	export SETEPLAM=SET
-
-	#Verifico permisos de escritura,lectura y ejecucion cuando corresponda
-
-	#Termina la ejecucion de initep sino puede cambiar el permiso correspondiente
-	#Creo una lista para enumerar los archivos ejecutables
-
-	#lista que contiene a los ejecutables, les voy a cambiar los permisos de lecutura y ejecucion
-	files_ejecutables="logep  demonep"
-	#lista que contiene los maestros
-	files_maestros="provincias.csv centros.csv trimestres.csv"
-
-	#su primer parametro es una lista de los permisos a fijar, por ejemplo r w x
-	#su segundo parametro es el nombre del archivo
-	fijar_permisos () {
+#su primer parametro es una lista de los permisos a fijar, por ejemplo r w x
+#sus siguientes parametros son los archivos a los cuales se les debe fijar los permisos
+fijar_permisos () {
+	for ((i=2; i<=$#; i++)) {
 		for permiso in $1
 		do
-			if [ ! -$permiso "$2" ]
+			eval archivo=\${$i}
+			if [ ! -$permiso "$archivo" ]
 			then
-					if ! chmod -f +$permiso "$2"
-					then 
-						case $permiso in
-							r) permiso=lectura;;
-							x) permiso=ejecución;;
-						esac
-						printf "error, fallo al intentar fijar permiso de $permiso en archivo "$2", verificar si archivo existe o si el usuario">&2
-						printf "tiene permitido cambiar permisos\n">&2
-						return -1
-					fi
+				if ! chmod -f +$permiso "$archivo"
+				then 
+					case $permiso in
+						r) permiso=lectura;;
+						x) permiso=ejecución;;
+					esac
+					printf "error, fallo al intentar fijar permiso de $permiso en archivo "$2", verificar si archivo ">&2
+					printf "%s\n" "existe o si el usuario tiene permitido cambiar permisos">&2
+					return -1
+				fi
 			fi
 		done
-		return 0
 	}
+	return 0
+}
 
-	#permisos del archivo de configuracion
-	if ! fijar_permisos r "../dirconf/instalep.conf"
-	then
-		break
-	fi
 
-	#permisos de ejecutables
-	for ejecutable in $files_ejecutables
-	do
-		if ! fijar_permisos "r x" "$ejecutable"
-		then
-			break 2
-		fi
-	done
+#me fijo si el ambiente ya fue inicalizado, para eso, uso la variable SETEPLAM como flag
+if [ "$SETEPLAM" == SET ]
+then
+	mensaje="Ambiente ya inicializado, para reinicializar termine la sesión e ingrese nuevamente"
+	printf "%s\n" "$mensaje">&2
+	logep -e "initep" "$mensaje"
 
+#Verifico permiso de los archivos configuracion y de los binarios
+#Termina la ejecucion de initep sino puede cambiar el permiso correspondiente
+
+elif fijar_permisos r "$1" && fijar_permisos "r x" logep demonep
+then
 	#Inicializo variables de directorio
 	while read -r linea
 	do
@@ -102,61 +72,61 @@ do
 				;;
 		esac
 	done <"$1"
-
+	
 	#permisos de archivos maestros (los agrego aca porque necesito la ruta que se carga en DIRMAE)
-	for maestro in $files_maestros
-	do
-		if ! fijar_permisos r "${DIRMAE}/${maestro}"
-		then
-			break 2
-		fi
-	done
-	#en la variable de ambiente path agrego el directorio de ejecutables
-	PATH=$PATH:"$DIRBIN"
+	#supongo que todos los archivos maestros finalizan en .csv
+	directorio_actual="$PWD"
+	cd "$DIRMAE"
 
-	#las variables se han inicalizado y los permisos de los arhcivos han sido fijados
-	mensaje="Estado del Sistema: INICIALIZADO"
-	printf "%s\n" "$mensaje"
-	logep -i "initep" "$mensaje"
+	if fijar_permisos r *.csv
+	then
 
-	#Pregunto por demonep
-	read -p "¿Desea efectuar la activación de Demonep (S/N)?" opcion
+		#en la variable de ambiente path agrego el directorio de ejecutables
+		PATH=$PATH:"$DIRBIN"
 
-	instrucciones_activar_demonio="Para activar el demonio corra comando demonep en background\n. Recibe como entrada los archivo maestros, tablas y el archivo novedades. Estos archivos se pueden encontrar en los directorios mae y rec respectivamente"
+		#las variables se han inicalizado y los permisos de los arhcivos han sido fijados
+		mensaje="Estado del Sistema: INICIALIZADO"
+		printf "%s\n" "$mensaje"
+		logep -i "initep" "$mensaje"
 
-	instrucciones_desactivar_demonio="Para desactivar demonio use el comando kill SIGTERM pid, donde pid es identificador del proceso, en caso de fallar use kill SIGKILL pid."
+		#Pregunto por demonep
+		read -p "¿Desea efectuar la activación de Demonep (S/N)?" opcion
 
-	case "$opcion" in
-		s|S ) 
-			printf "%s\n" "$instrucciones_desactivar_demonio"
-			logep -i "initep" "¿Desea efectuar la activación de Demonep (S/N)? Si"
-			./demonep &
-			pid=$!			
-			printf "%s\n" "Demonep corriendo bajo el numero: $pid" 
-			logep -i "initep" "Demonep corriendo bajo el numero: $pid"
-			;;
+		instrucciones_activar_demonio="Para activar el demonio corra comando demonep en background\n. Recibe como entrada los archivo maestros, tablas y el archivo novedades. Estos archivos se pueden encontrar en los directorios mae y rec respectivamente"
 
-		n|N ) 
-			printf "%s\n" "$instrucciones_activar_demonio"
-			printf "%s\n" "$instrucciones_desactivar_demonio"
-			logep -i "initep" "¿Desea efectuar la activación de Demonep (S/N)? No"
-			;;
+		instrucciones_desactivar_demonio="Para desactivar demonio use el comando kill SIGTERM pid, donde pid es identificador del proceso, en caso de fallar use kill SIGKILL pid."
 
-		* ) 
-			printf "Opción inválida\n">&2;&
-	esac
-	#no hubo problemas si llego hasta aqui asi que
-	ERROR=false
-	break
-done
+		case "$opcion" in
+			s|S ) 
+				printf "%s\n" "$instrucciones_desactivar_demonio"
+				logep -i "initep" "¿Desea efectuar la activación de Demonep (S/N)? Si"
+				./demonep &
+				pid=$!			
+				printf "%s\n" "Demonep corriendo bajo el numero: $pid" 
+				logep -i "initep" "Demonep corriendo bajo el numero: $pid"
+				;;
 
-#si hubo un error, limpio el ambiente borrando todas las variables incluyendo SETEPLAM
-#lo hago porque seria raro que saliera un mensaje de error y las variables quedaran inicializadas. El usario no confiaria en ellas.
-if [ ERROR == true ]
-then
-	variables="SETEPLAM DIRBIN DIRMAE DIRRECK DIROCK DIRINFO DIRLOG GRUPO DIRPROC"
-	for variable in $variables
-	do
-		unset "$variable"
-	done
+			n|N ) 
+				printf "%s\n" "$instrucciones_activar_demonio"
+				printf "%s\n" "$instrucciones_desactivar_demonio"
+				logep -i "initep" "¿Desea efectuar la activación de Demonep (S/N)? No"
+				;;
+
+			* ) 
+				printf "Opción inválida\n">&2;&
+		esac
+		#no hubo problemas si llego hasta aqui asi que fijo SETEPLAM
+		SETEPLAM=SET
+	else
+		#si hubo un error, limpio el ambiente borrando todas las variables incluyendo SETEPLAM
+		#lo hago porque seria raro que saliera un mensaje de error y las variables quedaran inicializadas. El usario no confiaria en ellas.
+		variables="SETEPLAM DIRBIN DIRMAE DIRRECK DIROCK DIRINFO DIRLOG GRUPO DIRPROC"
+		for variable in $variables
+		do
+			unset "$variable"
+		done
+	fi
 fi
+
+cd "$directorio_actual"
+
