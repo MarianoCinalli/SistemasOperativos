@@ -1,0 +1,31 @@
+#!/bin/bash
+
+movep() {
+	##El primer parametro es el origen
+	FILENAME=$1
+	##Me quedo con el nombre del archivo
+	FILENAME=${FILENAME##*/}
+	##Reservo la carpeta dpl para guardar los duplicados en destino
+	DUPLICATED="dpl"
+	COUNT=1
+	##Me paro sobre la carpeta destino y chequeo que no exita el archivo
+	cd "$2"
+	if [ ! -f $FILENAME ]
+	then 	
+		$(mv "$1" "$2")
+	else
+		##Si ya existe la carpeta dpl itero hasta que no encuentre el archivo con repeticiones 
+		if [ -d $DUPLICATED ]
+		then
+			cd $DUPLICATED
+			while [ -f "$FILENAME.$COUNT" ]
+			do
+				COUNT=$((COUNT+1))
+			done
+			$(mv "$1" "$2$DUPLICATED/$FILENAME.$COUNT")
+		else
+			mkdir $DUPLICATED
+			$(mv "$1" "$2$DUPLICATED/$FILENAME.$COUNT")
+		fi
+	fi
+}
