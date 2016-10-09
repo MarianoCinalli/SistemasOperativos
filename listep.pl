@@ -1,3 +1,5 @@
+#!/usr/bin/env perl
+
 #Defino funciones 
 #----------------------------------------------------------------------------
 sub mostrarMenu
@@ -27,22 +29,41 @@ sub cargarPresupuestos
 	}
 }
 
-sub buscarRegistrosPorTrimestre
+sub buscarRegistrosPorTrimestreYCentros
 {
-	$i = 0;
-	foreach $nombreArchivo (@nombresArchivos)
-		{
+	foreach $nombreArchivo (@nombresArchivos){
 			open($archivo, '<', $nombreArchivo);
 			
-			while($linea = <$archivo>)
-			{
-				if (index($linea,$_[0]) != -1)
-				{
-					$registrosBuscados[$i] = $linea;
-					$i++;
+			while($linea = <$archivo>){
+				@campos=split ";", $linea;
+				if ($campos[4]=~/^$_[0]/){
+					#es un booleano para saber si incluir un registro o no
+					$incluir=0;
+					foreach $centro (@centros){
+						if ($centro=~/\*/){
+							#es un rango
+							#saco * para que no mape cualquier cosa, lo guardo en otra variable para recuperarlo luego
+							$aux=$centro;							
+							$centro=~s/\*//;
+							if ($campos[2]=~/^$centro/){
+								#es un booleano para inculir la linea								
+								$incluir=1;
+							}
+							$centro=$aux;
+						}
+						else{
+							if ($campos[2] eq $centro){
+								$incluir=1;
+							}
+						}
+						if ($incluir){
+							push(@registrosBuscados, $linea);
+						}
+					}
 				}
 			}
-		}
+			close($archivo);
+	}
 }
 
 
@@ -103,7 +124,7 @@ sub mostrarMenuOrden
 #Aca arranca el script
 @registrosBuscados;
 %presTrimestre;
-$path ="/home/marcelo/Descargas/SistemasOperativos/datos";
+$path ="/home/pepe/Escritorio/gaspar/cosas/gaspar/contenido_pendrive/programacion/sistemas_operativos/tp/SistemasOperativos/datos";
 mostrarMenu;
 while ($opcion < 1 || $opcion > 3)
 {
@@ -192,65 +213,69 @@ if ($opcion == 3)
 	#Abro archivo de presupuesto sancionado de año corriente
 	open($sancionado,'<',$path. "/sancionado-2016.csv");
 
-	printf "Elija como filtrar los registros \n";
-	printf "1- un solo trimestre \n";
-	printf "2- Varios trimestres \n";
-	printf "3- Todos los Trimestres \n";
-	
-
-	$optrimestre = <STDIN>; 
-	if ($optrimestre == 1)
-	{
-		printf "Seleccione por cual trimestre desea filtrar \n";
-		printf "1- Primer \n";
-		printf "2- Segundo \n";
-		printf "3- Tercer \n";
-		printf "4- Cuarto \n";
-		$optrimestre = <STDIN>;
-		if($optrimestre == 1)
-		{
-			$trimestreABuscar = "Primer";
+	#guardo los cuatrimestres en una lista en ves de estar preguntando uno por uno	
+	print "Ingrese la lista de trimestres a filtrar (1,2,3,4) separados por comas, si no ingresa ningun trimestre asume que quiere todos:";
+	$linea=<STDIN>;
+	chop $linea;	
+	@campos=split (",", $linea);
+	@trimestres;
+	if (! @campos){
+		#si esta vacia quiere todos
+		@trimestres[0]="Primer";
+		@trimestres[1]="Segundo";
+		@trimestres[2]="Tercer";
+		@trimestres[3]="Cuarto";
+	}
+	else{
+		#remplazo valores numericos por strings
+		foreach $trimestre (@campos){
+			if ($trimestre=~ /^\s*1\s*$/){
+				push @trimestres,"Primer";
+			}
+			elsif ($trimestre=~ /^\s*2\s*$/){
+				push @trimestres, "Segundo";
+			}
+			elsif ($trimestre=~ /^\s*3\s*$/){
+				push @trimestres, "Tercer";
+			}
+			elsif ($trimestre=~ /^\s*4\s*$/){
+				push @trimestres, "Cuarto";
+			}
+			else{
+				die("error: cuatrimestres no valido");
+			}
 		}
-		if($optrimestre == 2)
-		{
-			$trimestreABuscar = "Segundo";
+	}
+	#hago lo mismo con los centros
+	print "Ingrese centros a filtrar, puede ser una lista, en la lista puede haber rangos (centro1,centro2,rango), si no\n";
+	print  "ingresa nada asume que quiere todos:";
+	$linea=<STDIN>;
+	chop $linea;
+	@centros=split (",", $linea);
+	#elimino espacios en blancos
+	if (!@centros){
+		#pusheo un rango que cubre todos los centros
+		push @centros, ".*";
+	}
+	else{
+		foreach $centro (@centros){
+			#elimino posibles espacios ingresados por el usario
+			$centro=~ s/^\s*//;
+			$centro=~ s/\s*$//;
 		}
-		if($optrimestre == 3)
-		{
-			$trimestreABuscar = "Tercer";
-		}
-		if($optrimestre == 4)
-		{
-			$trimestreABuscar = "Cuarto";
-		}
-		
-		#Cargo presupuesto sancionado para cada centro
-		cargarPresupuestos (%presTrimestre,$trimestreABuscar);
+	}
+	#por cada trimestre en la lista
+	foreach	$trimestre (@trimestres){
+		#Cargo presupuesto sancionado para cada centro en la lista
+		cargarPresupuestos (%presTrimestre, $trimestre);
 
 		$i = 0;
 
 		#Busco todos los registros del trimestre indicado
-		buscarRegistrosPorTrimestre ($trimestreABuscar,@registrosBuscados);
+		buscarRegistrosPorTrimestreYCentros ($trimestre, @registrosBuscados, @centros);
 
 		printf "ID	Fecha	Centro               Actividad    	Trimestre         Importe    Saldo  Control \n";
-
-		#Itero por cada centro
 		calcularYMostrarSaldos (%presTrimestre, @registrosBuscados);
-
-	} #fin optrimestre = 1
-	if($optrimestre == 3)
-	{
-		#No hay nada ejecutado en el cuarto trimestre de 2016 (todavia no termino)
-		@todosLosTrimestres = ("Primer","Segundo","Tercer");
-		foreach $trimestre (@todosLosTrimestres)
-		{
-			splice (@registrosBuscados);
-			undef %{$presTrimestre};
-			cargarPresupuestos (%presTrimestre,$trimestre);
-			buscarRegistrosPorTrimestre ($trimestre,@registrosBuscados);
-			calcularYMostrarSaldos (%presTrimestre,@registrosBuscados);
-			#falta descontar saldo negativo de trimestre anterior
-		}
 	}
 close($sancionado);
 

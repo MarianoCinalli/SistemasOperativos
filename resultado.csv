@@ -1,0 +1,84 @@
+ID;Fecha;Centro;Actividad;Trimestre;Importe;Saldo;Control
+142;20160123;0.0.0.1-2-1.3;Fiscalizacion Jujuy;Primer Trimestre 2016;87.5;412.5;-
+73;20160103;0.0.0.1-2-1.3;Fiscalizacion Catamarca;Primer Trimestre 2016;87.5;325;-
+122;20160118;0.0.0.1-2-1.3;Fiscalizacion Corrientes;Primer Trimestre 2016;62.5;262.5;-
+130;20160120;0.0.0.1-2-1.3;Fiscalizacion Entre Rios;Primer Trimestre 2016;62.5;200;-
+79;20160410;0.0.0.1-2-1.3;Fiscalizacion Chaco;Segundo Trimestre 2016;44;156;-
+124;20160422;0.0.0.1-2-1.3;Fiscalizacion Corrientes;Segundo Trimestre 2016;87.5;68.5;-
+132;20160425;0.0.0.1-2-1.3;Fiscalizacion Entre Rios;Segundo Trimestre 2016;90.93;-22.43;Gasto excedido
+138;20160427;0.0.0.1-2-1.3;Fiscalizacion Formosa;Segundo Trimestre 2016;62.5;-84.93;Gasto excedido
+207;20160224;0.0.0.1-2-1;Capacitacion Continua;Primer Trimestre 2016;102.68;624.82;-
+209;20160223;0.0.0.1-2-1;Capacitacion Continua;Primer Trimestre 2016;174.83;449.99;-
+131;20160121;0.0.0.1-2-1;Desarrollo de Procesos;Primer Trimestre 2016;138.75;311.24;-
+53;20160408;0.0.0.1-2-1;Capacitacion Continua;Segundo Trimestre 2016;82.14;229.1;-
+61;20160406;0.0.0.1-2-1;Capacitacion Continua;Segundo Trimestre 2016;139.86;89.2399999999999;-
+251;20160531;0.0.0.1-2-1;Fiscalizacion Santa Fe;Segundo Trimestre 2016;166.5;-77.2600000000001;Gasto excedido
+18;20160310;0.0.0.1-2-1;Capacitacion Continua;Segundo Trimestre 2016;138.75;-216.01;Gasto excedido
+26;20160315;0.0.0.1-2-1;Desarrollo de Procesos;Segundo Trimestre 2016;166.50;-382.51;Gasto excedido
+43;20151222;0.0.0.1-2-1.1;Desarrollo de Procesos;Primer Trimestre 2016;92.50;2007.5;-
+45;20151220;0.0.0.1-2-1.1;Fiscalizacion CABA;Primer Trimestre 2016;101.75;1905.75;-
+48;20151220;0.0.0.1-2-1.1;Fiscalizacion CABA;Primer Trimestre 2016;150.00;1755.75;-
+49;20151222;0.0.0.1-2-1.1;Fiscalizacion CABA;Primer Trimestre 2016;150.00;1605.75;-
+50;20151221;0.0.0.1-2-1.1;Desarrollo de Procesos;Primer Trimestre 2016;157.50;1448.25;-
+51;20151221;0.0.0.1-2-1.1;Fiscalizacion CABA;Primer Trimestre 2016;173.25;1275;-
+2;20151210;0.0.0.1-2-1.1;Desarrollo de Procesos;Primer Trimestre 2016;92.50;1182.5;-
+3;20151210;0.0.0.1-2-1.1;Fiscalizacion Buenos Aires;Primer Trimestre 2016;111.00;1071.5;-
+4;20151210;0.0.0.1-2-1.1;Fiscalizacion Buenos Aires;Primer Trimestre 2016;111.00;960.5;-
+5;20151210;0.0.0.1-2-1.1;Fiscalizacion Buenos Aires;Primer Trimestre 2016;111.00;849.5;-
+6;20151210;0.0.0.1-2-1.1;Fiscalizacion Buenos Aires;Primer Trimestre 2016;118.75;730.75;-
+7;20151210;0.0.0.1-2-1.1;Desarrollo de Procesos;Primer Trimestre 2016;157.50;573.25;-
+8;20151210;0.0.0.1-2-1.1;Fiscalizacion Buenos Aires;Primer Trimestre 2016;189.00;384.25;-
+9;20151210;0.0.0.1-2-1.1;Fiscalizacion Buenos Aires;Primer Trimestre 2016;189.00;195.25;-
+10;20151210;0.0.0.1-2-1.1;Fiscalizacion Buenos Aires;Primer Trimestre 2016;189.00;6.25;-
+55;20160409;0.0.0.1-2-1.1;Fiscalizacion CABA;Segundo Trimestre 2016;101.75;-95.5;Gasto excedido
+56;20160328;0.0.0.1-2-1.1;Fiscalizacion CABA;Segundo Trimestre 2016;120;-215.5;Gasto excedido
+57;20160402;0.0.0.1-2-1.1;Fiscalizacion CABA;Segundo Trimestre 2016;120;-335.5;Gasto excedido
+58;20160403;0.0.0.1-2-1.1;Fiscalizacion CABA;Segundo Trimestre 2016;120;-455.5;Gasto excedido
+59;20160404;0.0.0.1-2-1.1;Fiscalizacion CABA;Segundo Trimestre 2016;120;-575.5;Gasto excedido
+60;20160405;0.0.0.1-2-1.1;Fiscalizacion CABA;Segundo Trimestre 2016;120;-695.5;Gasto excedido
+62;20160407;0.0.0.1-2-1.1;Fiscalizacion CABA;Segundo Trimestre 2016;173.25;-868.75;Gasto excedido
+12;20160310;0.0.0.1-2-1.1;Fiscalizacion Buenos Aires;Segundo Trimestre 2016;96.2;-964.95;Gasto excedido
+13;20160310;0.0.0.1-2-1.1;Fiscalizacion Buenos Aires;Segundo Trimestre 2016;96.2;-1061.15;Gasto excedido
+14;20160310;0.0.0.1-2-1.1;Fiscalizacion Buenos Aires;Segundo Trimestre 2016;96.2;-1157.35;Gasto excedido
+15;20160310;0.0.0.1-2-1.1;Fiscalizacion Buenos Aires;Segundo Trimestre 2016;96.2;-1253.55;Gasto excedido
+16;20160310;0.0.0.1-2-1.1;Fiscalizacion Buenos Aires;Segundo Trimestre 2016;96.2;-1349.75;Gasto excedido
+21;20160316;0.0.0.1-2-1.1;Fiscalizacion Buenos Aires;Segundo Trimestre 2016;163.80;-1513.55;Gasto excedido
+22;20160317;0.0.0.1-2-1.1;Fiscalizacion Buenos Aires;Segundo Trimestre 2016;163.80;-1677.35;Gasto excedido
+23;20160318;0.0.0.1-2-1.1;Fiscalizacion Buenos Aires;Segundo Trimestre 2016;163.80;-1841.15;Gasto excedido
+24;20160319;0.0.0.1-2-1.1;Fiscalizacion Buenos Aires;Segundo Trimestre 2016;163.80;-2004.95;Gasto excedido
+25;20160324;0.0.0.1-2-1.1;Fiscalizacion Buenos Aires;Segundo Trimestre 2016;163.80;-2168.75;Gasto excedido
+42;20151220;0.0.0.1-1-1;Desarrollo de Procesos;Primer Trimestre 2016;24.40;0;-
+42;20151220;0.0.0.1-1-1;Desarrollo de Procesos;Primer Trimestre 2016;24.40;-24.4;Gasto excedido
+234;20160304;0.0.0.1-2-1.2;Fiscalizacion Santa Fe;Primer Trimestre 2016;111;1339;-
+235;20160305;0.0.0.1-2-1.2;Fiscalizacion Santa Fe;Primer Trimestre 2016;111;1228;-
+237;20160302;0.0.0.1-2-1.2;Fiscalizacion Santa Fe;Primer Trimestre 2016;189;1039;-
+238;20160303;0.0.0.1-2-1.2;Fiscalizacion Santa Fe;Primer Trimestre 2016;189;850;-
+95;20160114;0.0.0.1-2-1.2;Desarrollo de Procesos;Primer Trimestre 2016;92.5;757.5;-
+98;20160116;0.0.0.1-2-1.2;Fiscalizacion Cordoba;Primer Trimestre 2016;111;646.5;-
+99;20160117;0.0.0.1-2-1.2;Fiscalizacion Cordoba;Primer Trimestre 2016;111;535.5;-
+101;20160110;0.0.0.1-2-1.2;Desarrollo de Procesos;Primer Trimestre 2016;157.5;378;-
+103;20160112;0.0.0.1-2-1.2;Fiscalizacion Cordoba;Primer Trimestre 2016;189;189;-
+104;20160113;0.0.0.1-2-1.2;Fiscalizacion Cordoba;Primer Trimestre 2016;189;0;-
+240;20160606;0.0.0.1-2-1.2;Desarrollo de Procesos;Segundo Trimestre 2016;92.5;-92.5;Gasto excedido
+241;20160607;0.0.0.1-2-1.2;Fiscalizacion Santa Fe;Segundo Trimestre 2016;97.125;-189.625;Gasto excedido
+242;20160608;0.0.0.1-2-1.2;Fiscalizacion Santa Fe;Segundo Trimestre 2016;97.125;-286.75;Gasto excedido
+243;20160609;0.0.0.1-2-1.2;Fiscalizacion Santa Fe;Segundo Trimestre 2016;97.125;-383.875;Gasto excedido
+247;20160601;0.0.0.1-2-1.2;Desarrollo de Procesos;Segundo Trimestre 2016;157.5;-541.375;Gasto excedido
+248;20160602;0.0.0.1-2-1.2;Fiscalizacion Santa Fe;Segundo Trimestre 2016;165.375;-706.75;Gasto excedido
+249;20160603;0.0.0.1-2-1.2;Fiscalizacion Santa Fe;Segundo Trimestre 2016;165.375;-872.125;Gasto excedido
+250;20160604;0.0.0.1-2-1.2;Fiscalizacion Santa Fe;Segundo Trimestre 2016;165.375;-1037.5;Gasto excedido
+107;20160420;0.0.0.1-2-1.2;Fiscalizacion Cordoba;Segundo Trimestre 2016;97.125;-1134.625;Gasto excedido
+109;20160416;0.0.0.1-2-1.2;Fiscalizacion Cordoba;Segundo Trimestre 2016;131.25;-1265.875;Gasto excedido
+110;20160417;0.0.0.1-2-1.2;Fiscalizacion Cordoba;Segundo Trimestre 2016;131.25;-1397.125;Gasto excedido
+111;20160418;0.0.0.1-2-1.2;Fiscalizacion Cordoba;Segundo Trimestre 2016;165.375;-1562.5;Gasto excedido
+206;20160221;0.0.0.1-2-1.4;Fiscalizacion San Juan;Primer Trimestre 2016;15.25;284.75;-
+84;20160131;0.0.0.1-2-1.4;Fiscalizacion Chubut;Primer Trimestre 2016;8.5;276.25;-
+210;20160520;0.0.0.1-2-1.4;Fiscalizacion San Juan;Segundo Trimestre 2016;55;221.25;-
+87;20160413;0.0.0.1-2-1.4;Fiscalizacion Chubut;Segundo Trimestre 2016;55;166.25;-
+47;20151221;0.0.0.1-2;Desarrollo de Aplicativos;Primer Trimestre 2016;138.75;697.87;-
+97;20160115;0.0.0.1-2;Desarrollo de Aplicativos;Primer Trimestre 2016;102.675;595.195;-
+100;20160109;0.0.0.1-2;Desarrollo de Procesos;Primer Trimestre 2016;138.75;456.445;-
+102;20160111;0.0.0.1-2;Desarrollo de Aplicativos;Primer Trimestre 2016;174.825;281.62;-
+245;20160522;0.0.0.1-2;Desarrollo de Aplicativos;Segundo Trimestre 2016;111;170.62;-
+246;20160530;0.0.0.1-2;Desarrollo de Procesos;Segundo Trimestre 2016;150;20.6200000000001;-
+252;20160605;0.0.0.1-2;Desarrollo de Aplicativos;Segundo Trimestre 2016;189;-168.38;Gasto excedido
