@@ -1,0 +1,351 @@
+#!/bin/bash
+################################################################################################################################
+#
+# ACLARACIONES: Marque como 1ro 2do 3ro ... Los items de la consigna del .pdf
+#               En las funciones is_CODE_CEN_valid, is_activity_valid, is_trimester_valid, is_date_valid es el $DIRMAE.
+#               Maque con TODO's lo que falta hacer o revisar.
+#	        Son 3 funciones de validaciones y los llamados a las funciones logep y movep.
+#               Las funciones que testee estan marcadas con #TESTEADO. Las demas no las pude testear.
+#
+#################################################################################################################################
+
+# Funciones internas -----------------------------------------------------------------------------------------
+
+# Funciones validadoras --------------------------------------------------------------
+
+# Devuelve verdadero (0) si el sistema fue inicializado.
+function is_system_initialized(){
+
+	# TODO
+	return 0 # TRUE
+
+}
+
+# Devuelve verdadero (0) si el archivo no se encuentra en la carpeta de procesados.
+function is_file_unique(){
+
+	# TODO
+	return 0 # TRUE
+
+}
+
+# Devuelve verdadero (0) si el formato del los registros es valido. ( Primera linea del .csv )
+function is_file_valid(){
+
+	# TODO
+	return 0 #TRUE
+
+}
+
+# Comparacion y formateo de fechas -----------------------------------------------------
+
+# Entra una ruta con el siguiente formato <path>/ejecutado_<año_presupuestario>_<cod_provincia>_<aniomesdia>.csv
+# Devuelve dia/mes/anio
+function date_parser(){
+	#TESTEADO
+	filename=$(basename "$1" .csv)
+
+	yearmonthday=$( echo "$filename" | cut -d'_' -f4 )
+
+	date_separator "$yearmonthday"
+	returned_formated_date=$returned_separated_date
+
+}
+
+function date_separator(){
+	#TESTEADO
+	year=$( echo "$1" | cut -c1-4 )
+	month=$( echo "$1" | cut -c5-6 )
+	day=$( echo "$1" | cut -c7-8 )
+	
+	returned_separated_date="$day/$month/$year"
+}
+
+# Si la primera fecha $1 es menoro igual que la segunda fecha $2 devuelve verdadero (0)
+# Formato para las fechas dd/mm/aaaa
+function is_first_date_less_than_or_equals_second_date(){
+	#TESTEADO
+	VALID=1 #FALSE
+	
+	first_day=$( echo "$1" | cut -c1-2 )
+	second_day=$( echo "$2" | cut -c1-2 )
+
+	first_month=$( echo "$1" | cut -c4-5 )
+	second_month=$( echo "$2" | cut -c4-5 )
+
+	first_year=$( echo "$1" | cut -c7-10 )
+	second_year=$( echo "$2" | cut -c7-10 )
+
+	if [ $first_year -lt $second_year ]
+	then
+		VALID=0 #TRUE
+	elif [ $first_year -eq $second_year ] && [ $first_month -lt $second_month ]
+		then
+			VALID=0 #TRUE
+		elif [ $first_year -eq $second_year ] && [ $first_month -eq $second_month ] && [ $first_day -le $second_day ]
+			then
+				VALID=0 #TRUE
+	fi
+
+	return $VALID
+
+}
+
+# Funciones para validar registros --------------------------------------------------------
+
+# Devuelve verdadero (0) si el parametro pertenece al archivo centros.csv
+function is_CODE_CEN_valid(){
+	#TESTEADO
+	VALID=1 #FALSE
+
+	while read -r line
+	do
+		IFS=';'
+		read -r COD_CEN NOM_CEN <<< "$line"
+		if [ $1 == $COD_CEN ]
+		then 
+			VALID=0 #TRUE
+		fi
+	
+	done < $DIRMAE/centros.csv
+
+	return $VALID
+
+}
+
+# Devuelve verdadero (0) si la actividad pertenece al archivo actividades.csv
+function is_activity_valid(){
+	#TESTEADO
+	VALID=1 #FALSE
+
+	while read -r line
+	do
+		IFS=';'
+		
+		read -r COD_ACT OBJ_ACT PGM_ACT NOM_ACT <<< "$line"
+		if [ "$1" = "$NOM_ACT" ]
+		then 
+			VALID=0 #TRUE
+		fi
+	
+	done < $DIRMAE/actividades.csv
+
+	return $VALID
+
+}
+
+# Devuelve verdadero (0) si el trimestre pertenece al archivo trimestres.csv
+# y si el trimestre sea del año presupuestario corriente.
+function is_trimester_valid(){
+	#TESTEADO
+	VALID=1 #FALSE
+	# Primero veo que el timestre pertenezca al archivo.
+	while read -r line
+	do
+		IFS=';'
+		
+		read -r ANO_TRI NOM_TRI FDESDE_TRI FHASTA_TRI <<< "$line"
+		if [ "$1" = "$NOM_TRI" ]
+		then 
+			VALID=0 #TRUE
+		fi
+	
+	done < $DIRMAE/trimestres.csv
+
+	# TODO No entiendo a lo que se refiere con verificar lo siguiente.
+	# Luego que el trimestre sea del año presupuestario corriente.
+	
+	return $VALID
+
+}
+
+# Devuelve verdadero (0) para el trimestre ($3) si la fecha del registro ($1) menor o igual a la fecha del nombre del archivo ($2)
+# y si ($1) pertence a ( FDESDE_TRI , FHASTA_TRI )
+function is_date_valid(){
+	#TESTEADO
+	VALID=1 #FALSE
+
+	while read -r line
+	do
+		IFS=';'
+		read -r ANO_TRI NOM_TRI FDESDE_TRI FHASTA_TRI <<< "$line"
+
+		# Comparo fechas solo para el trimestre correspondiente.
+		if [ "$3" = "$NOM_TRI" ]
+		then	
+			# Comparo fechas
+			if is_first_date_less_than_or_equals_second_date $FDESDE_TRI $1 && 
+			   is_first_date_less_than_or_equals_second_date $1 $FHASTA_TRI && 
+			   is_first_date_less_than_or_equals_second_date $1 $2
+			then 
+				VALID=0 #TRUE
+			fi
+		fi
+	
+	done < $DIRMAE/trimestres.csv
+
+	return $VALID
+
+}
+
+# Devuelve verdadero (0) si el gasto es mayor a cero.
+function is_expenditure_valid(){
+	
+	#TESTEADO
+	VALID=1 #FALSE
+	
+	if (("$1">"0"))
+	then
+
+		VALID=0 #TRUE
+
+	fi
+	
+	return $VALID
+}
+
+# Funciones procesadoras --------------------------------------------------------------
+
+# Procesa todos los archivos de una carpeta.	
+function process_files_in_folder(){
+
+	# Itero por cada archivo dentro de la carpeta
+	for file in "$folder"/*
+	do	
+		# 4to valido la unicidad del archivo a procesar.
+		proces process_file $file
+	done
+
+}
+
+# Procesa un archivo.
+function process_file(){
+
+	lines_processed=0
+	# 3ro Antes de procesar un archivo verificar que no esta duplicado.
+	if is_file_unique $1 
+	then
+		# 4to Antes de procesar un archivo verificar el formato.
+		if is_file_valid $1
+		then
+		# Para cada linea en el archivo
+
+		else
+			#TODO movep $1 $DIRNOK
+		fi
+	else
+		#TODO movep $1 $DIRNOK
+	fi
+
+	return $lines_processed
+
+}
+
+function process_file_register_by_register(){
+	
+	# Creo contadores de registros, validos e invalidos, y un booleano (0 exito - 1 fallo).
+	valid_registers=0
+	invalid_registers=0
+	is_register_valid=1 #FALSE
+
+	# Obtengo el nombre del archivo con la extencion.
+	filename=$(basename "$1")
+
+	# Obtengo la fecha del archivo.
+	date_parser $1
+	date_of_file=$returned_formated_date
+
+	# Obtengo el anio del archivo. Segundo campo luego del _
+	year_of_file=$(echo $filename | cut -d"_" -f2)
+
+	# (TODO verificar que esten bien las rutas) Creo el archivo de registros invalidos y validos	
+	touch $DIRPROC/ejecutado-$year_of_file
+	touch $DIRPROC/rechazado-$year_of_file
+
+	while read -r line
+	do
+		lines_processed++
+		
+		# Separo los componentes del registro
+		IFS=';'
+		read -r ID_EJE FECHA_EJE COD_CEN_EJE NOM_ACT_EJE NOM_TRI_EJE GASTO_EJE <<< "$line"
+
+		# El primer registro contiene la estructura.
+		# Lo mando tal cual a los archivosde validos e invalidos.
+		if ((lines_processed = 0))
+		then
+			
+			echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE" >> $DIRPROC/ejecutado-$year_of_file
+			echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE" >> $DIRPROC/rechazado-$year_of_file
+
+		fi
+
+		# 5to validar registro.
+		# Componente a componente. 
+		# Esta asi para poder distinguir los errores en el log.
+		# Aclaracion para las funciones: Todas las variables con espacios se mandan como "$variable".
+		if is_CODE_CEN_valid $COD_CEN_EJE
+		then
+			if is_activity_valid "$NOM_ACT_EJE"
+			then
+				if is_trimester_valid "$NOM_TRI_EJE"
+				then
+					# Del registro la fecha viene como aaaammdd.
+					# La formateo como dd/mm/aaaa
+					date_separator "$FECHA_EJE"
+					date_of_register=$returned_separated_date
+
+					if is_date_valid $date_of_register $date_of_file "$NOM_TRI_EJE"
+					then
+						if is_expenditure_valid $GASTO_EJE
+						then
+							is_register_valid=0 #TRUE
+						else
+							#TODO logep "El registro, $line, tiene gastos invalidos" "$DIRLOG/Procep.log"
+					else
+						#TODO logep "El registro, $line, tiene fecha invalida" "$DIRLOG/Procep.log"
+				else
+					#TODO logep "El registro, $line, tiene trimestre invalido" "$DIRLOG/Procep.log"
+
+				#TODO logep "El registro, $line, tiene actividad invalida" "$DIRLOG/Procep.log"
+		else
+			#TODO logep "El registro, $line, tiene codigo de central invalido" "$DIRLOG/Procep.log"
+		
+		if $is_register_valid
+		then
+			# 6to grabar registro valido. Aumentar contador
+			
+			echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE" >> $DIRPROC/rechazado-$year_of_file
+			valid_registers++
+		else
+			# 7mo grabar registro invalido. Aumentar contador
+			
+			echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE" >> $DIRPROC/rechazado-$year_of_file
+			invalid_registers++
+		
+		
+		# Grabar log registros validos e invalidos.
+		# DIRPROC/proc/<nombre del archivo> empleando la función Movep.
+		#TODO logep "Se procesaron $valid_registers registros validos." "$DIRLOG/Procep.log"
+		#TODO logep "Se procesaron $valid_registers registros invalidos." "$DIRLOG/Procep.log"
+		
+		# Mover archivos.
+		#TODO movep "$1" "$DIRPROC/proc/filename"
+
+	done < $1
+
+}
+
+# Body -------------------------------------------------------------------------------------
+
+# 1ro ¿Sistema inicializado?
+if is_system_initialized
+then
+	printf "El sistema no fue inicializado.\nCorra initep.\nEjecucion terminada.\n"
+else
+	# 2do informar cantidad de archivos a procesar
+	CANTIDADARCHIVOS=$(ls -1 | wc -l)
+	echo "$CANTIDADARCHIVOS"
+		
+	# 3ro procesar archivos
+	process_files_in_folder
