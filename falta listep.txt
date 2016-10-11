@@ -1,3 +1,3 @@
 Falta hacer (ver enunciado)
 Opcion 2: Listados de presupuestos ejecutados (vas a necesitar los archivos anuales con presupuesto ejecutado que genera el procep ver final de pagina 11 y 12 del enunciado). De eso se encarga Mariano, habla con el.
-Opcion 3: Listado de control del presupuesto ejecutado (faltan hacer los 3 filtrados por centro: ver final pagina 8 del enunciado).
+Falta contemplar lo de los gastos no previstos. Modifique un poco la forma de cargar los centros cuando se elige filtrar por rango.
