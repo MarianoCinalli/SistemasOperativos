@@ -1,10 +1,31 @@
 #!/bin/bash
 
+source ./logep
+
 movep() {
-	##El primer parametro es el origen
-	FILENAME=$1
+	##Logeo en el log del comando o en movep si no me pasan ninguno
+	LOGGER=$3
+	if [ $# -eq 2 ]
+	then
+		LOGGER="movep"
+	fi
+	if [ ${1%/*} == $2 ]
+	then
+		logep -e $LOGGER "El origen y el destino son iguales"
+		return
+	fi 
+	if [ ! -f $1 ]
+	then
+		logep -e $LOGGER "El archivo de origen no existe"
+		return
+	fi
+	if [ ! -d $2 ]
+	then
+		logep -e $LOGGER "La carpeta destino no existe"
+		return
+	fi
 	##Me quedo con el nombre del archivo
-	FILENAME=${FILENAME##*/}
+	FILENAME=${1##*/}
 	##Reservo la carpeta dpl para guardar los duplicados en destino
 	DUPLICATED="dpl"
 	COUNT=1
