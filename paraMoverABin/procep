@@ -16,8 +16,10 @@
 # Devuelve verdadero (0) si el sistema fue inicializado.
 function is_system_initialized(){
 
-	# TODO
-	return 0 # TRUE
+	is_initialiazed=1 #FALSE
+	
+	if [ -n "$DIRBIN" ]; then is_initialiazed=0 #TRUE ;fi
+	return $is_initialiazed
 
 }
 
