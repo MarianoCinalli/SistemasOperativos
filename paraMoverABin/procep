@@ -15,10 +15,10 @@
 
 # Devuelve verdadero (0) si el sistema fue inicializado.
 function is_system_initialized(){
-
+	#TESTEADO
 	is_initialiazed=1 #FALSE
 	
-	if [ -n "$DIRBIN" ]; then is_initialiazed=0 #TRUE ;fi
+	if [ -n "$DIRBIN" ]; then is_initialiazed=0 ;fi
 	return $is_initialiazed
 
 }
@@ -31,10 +31,29 @@ function is_file_unique(){
 
 }
 
-# Devuelve verdadero (0) si el formato del los registros es valido. ( Primera linea del .csv )
+# Devuelve verdadero (0) si el formato del los registros es valido.
 function is_file_valid(){
 
-	# TODO
+	is_valid=1 # FALSE
+
+	# Obtengo la primera linea.
+	# La misma contiene el formato de los registros.
+	format_reg=$(head -n 1 $1)
+	# Cuento los campos.
+	# En realidad, cuento los ; (separadores de campos)
+	format_reg_field_quantity=$( grep -o ";" <<< "$format_reg" | wc -l )
+
+	# Obtengo la segunda linea.
+	first_reg=$(head -n 2 $1 | tail -1)
+	# Cuento los campos
+	first_reg_field_quantity=$( grep -o ";" <<< "$first_reg" | wc -l )
+
+	# El primer registro que tiene que contener la misma
+	# cantidad de campos que los del formato.
+	# Si son iguales el archivo es considerado valido.
+	if [ "$format_reg_field_quantity" -eq "$first_reg_field_quantity" ]; then is_valid=0 ;fi
+
+	return $is_valid
 	return 0 #TRUE
 
 }
