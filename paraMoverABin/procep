@@ -3,8 +3,8 @@
 #
 # ACLARACIONES: Marque como 1ro 2do 3ro ... Los items de la consigna del .pdf
 #               En las funciones is_CODE_CEN_valid, is_activity_valid, is_trimester_valid, is_date_valid es el $DIRMAE.
-#               Maque con TODO's lo que falta hacer o revisar.
-#	        Los llamados a las funciones logep y movep.
+#               Maque con TODO's lo que falta revisar.
+#	        Faltan los llamados a las funciones logep y movep.
 #               Las funciones que testee estan marcadas con #TESTEADO. Las demas no las pude testear.
 #
 #################################################################################################################################
@@ -15,6 +15,7 @@
 
 # Devuelve verdadero (0) si el sistema fue inicializado.
 function is_system_initialized(){
+
 	#TESTEADO
 	is_initialiazed=1 #FALSE
 	
@@ -285,7 +286,7 @@ function process_file_register_by_register(){
 	date_parser $1
 	date_of_file=$returned_formated_date
 
-	# Obtengo el anio del archivo. Segundo campo luego del _
+	# Obtengo el anio del archivo. (Segundo campo luego del _)
 	year_of_file=$(echo $filename | cut -d"_" -f2)
 
 	# (TODO verificar que esten bien las rutas) Creo el archivo de registros invalidos y validos	
@@ -301,7 +302,7 @@ function process_file_register_by_register(){
 		read -r ID_EJE FECHA_EJE COD_CEN_EJE NOM_ACT_EJE NOM_TRI_EJE GASTO_EJE <<< "$line"
 
 		# El primer registro contiene la estructura.
-		# Lo mando tal cual a los archivosde validos e invalidos.
+		# Lo mando tal cual a los archivos de validos e invalidos.
 		if ((lines_processed = 0))
 		then
 			
@@ -325,7 +326,7 @@ function process_file_register_by_register(){
 					date_separator "$FECHA_EJE"
 					date_of_register=$returned_separated_date
 
-					if is_date_valid $date_of_register $date_of_file "$NOM_TRI_EJE"
+					if is_date_valid $date_of_register $date_of_file "$NOM_TRI_EJE";
 					then
 						if is_expenditure_valid $GASTO_EJE
 						then
@@ -345,22 +346,21 @@ function process_file_register_by_register(){
 		then
 			# 6to grabar registro valido. Aumentar contador
 			
-			echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE" >> $DIRPROC/rechazado-$year_of_file
-			valid_registers++
+			echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE" >> $DIRPROC/ejecutado-$year_of_file
+			((valid_registers++))
 		else
 			# 7mo grabar registro invalido. Aumentar contador
 			
 			echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE" >> $DIRPROC/rechazado-$year_of_file
-			invalid_registers++
+			((invalid_registers++))
 		
 		
 		# Grabar log registros validos e invalidos.
-		# DIRPROC/proc/<nombre del archivo> empleando la función Movep.
 		#TODO logep "Se procesaron $valid_registers registros validos." "$DIRLOG/Procep.log"
 		#TODO logep "Se procesaron $valid_registers registros invalidos." "$DIRLOG/Procep.log"
 		
-		# Mover archivos.
-		#TODO movep "$1" "$DIRPROC/proc/filename"
+		# Mover archivo procesado.
+		#TODO movep "$1" "$DIRPROC/ejecutado/$filename"
 
 	done < $1
 
