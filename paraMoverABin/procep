@@ -4,7 +4,7 @@
 # ACLARACIONES: Marque como 1ro 2do 3ro ... Los items de la consigna del .pdf
 #               En las funciones is_CODE_CEN_valid, is_activity_valid, is_trimester_valid, is_date_valid es el $DIRMAE.
 #               Maque con TODO's lo que falta hacer o revisar.
-#	        Son 3 funciones de validaciones y los llamados a las funciones logep y movep.
+#	        Los llamados a las funciones logep y movep.
 #               Las funciones que testee estan marcadas con #TESTEADO. Las demas no las pude testear.
 #
 #################################################################################################################################
@@ -26,8 +26,17 @@ function is_system_initialized(){
 # Devuelve verdadero (0) si el archivo no se encuentra en la carpeta de procesados.
 function is_file_unique(){
 
-	# TODO
-	return 0 # TRUE
+	# TESTEADO
+
+	is_unique=1 # FALSE
+
+	if [ ! -f $GRUPO03/DIRPROC/proc/$1 ]; then
+
+    		is_unique=0 # TRUE
+	fi
+
+	return $is_unique
+
 
 }
 
