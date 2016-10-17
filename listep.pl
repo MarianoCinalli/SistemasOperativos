@@ -1,357 +1,491 @@
-#Defino funciones 
-#----------------------------------------------------------------------------
-sub mostrarMenu
-{
-	printf "Elija el listado que desee generar: \n";
-	printf "1- Listado de presupuesto sancionado \n";
-	printf "2- Listado de presupuesto ejecutado \n";
-	printf "3- Listado de control de presupuesto ejecutado \n";
+#!/usr/bin/env perl
 
-	$opcion = <STDIN>;	
+###Objeto Filtro####
+
+#defino objeto filtro, su objetivo es filtrar provincias , trimestres, centros u otros campos
+#en el constructor recibe una lista de tokens (strings) y rangos
+sub Filtro::new{
+	my $class=shift;
+	my $self={aceptar_todo=> 0,tokens=>{}, rangos=>[]};
+	bless ($self, $class);
+	foreach (@_){
+		$self->add($_);
+	}
+	return $self;
 }
 
-sub cargarPresupuestos
-{
-	while($linea = <$sancionado>)
-	{
-		if(index($linea,$_[0]) != -1)
-		{
-			@campos = split ";" , $linea;
-
-			#reemplazo coma por punto para poder sumar doubles
-			$campos[2] =~ s/,/./;
-			$campos[3] =~ s/,/./;
-
-			$presTrimestre{$campos[0]} = $campos[2] + $campos[3];
-		}
-	}
-}
-
-sub inicializarDeudas
-{
-	foreach (keys(%presTrimestre))
-	{
-		$deudaCentros{$_} = 0;
-		printf $_ . " " . $deudaCentros{$_};
-	}
-}
-
-sub cargarCentrosPorRango
-{
-	@centrosBuscados;
-	foreach (keys(%presTrimestre))
-	{
-		if (index($_,$_[0]) !=-1)
-		{
-			printf $_ . "\n";
-			push(@centrosBuscados,$_);
-		}
-	}
-	return @centrosBuscados;
-}
-
-sub buscarRegistrosPorTrimestreYCentros
-{
-	foreach $nombreArchivo (@nombresArchivos){
-			open($archivo, '<', $nombreArchivo);
-			
-			while($linea = <$archivo>){
-				@campos=split ";", $linea;
-				if ($campos[4]=~/^$_[0]/){
-					#es un booleano para saber si incluir un registro o no
-					foreach $centro (@centros){
-					$incluir=0;
-						if ($centro=~/\*/){
-							#es un rango
-							#saco * para que no mape cualquier cosa, lo guardo en otra variable para recuperarlo luego
-							$aux=$centro;							
-							$centro=~s/\*//;
-							if ($campos[2]=~/^$centro/){
-								#es un booleano para inculir la linea								
-								$incluir=1;
-							}
-							$centro=$aux;
-						}
-						else{
-							if ($campos[2] eq $centro){
-								$incluir=1;
-							}
-						}
-						if ($incluir){
-							push(@registrosBuscados, $linea);
-						}
-					}
-				}
-			}
-			close($archivo);
-	}
-}
-
-sub obtenerFechaInicioTrimestre
-{
-	$fecha;
-	open(TRIMESTRES,"<".$path."/trimestres.csv");
-	while( $linea = <TRIMESTRES>)
-	{
-		@campos = split ";" , $linea;
-		if( index($campos[1],$_[0]) != -1 && index($campos[1],"2016") != -1 )
-		{
-			$fecha = $campos[2];
-		}
-	}
-	close(TRIMESTRES);
-	return $fecha;
-
-}
-sub calcularYMostrarSaldos 
-{
-#Se pide mostrar en pantalla, pero es ilegible, grabo en un archivo para que se entienda
-#por mas que sea opcional.
-printf "Fecha ". $_[1] . "\n";
-open (RESULTADO,">>resultado.csv");
-printf RESULTADO "ID;Fecha;Centro;Actividad;Trimestre;Importe;Saldo;Control\n";
-	foreach (keys(%presTrimestre))
-		{
-			$saldo = $presTrimestre{$_};
-			#Faltaria grabar el saldo inicial de cada centro
-			#printf "Saldo inicial: " . $saldo . "\n";
-			if($_ ~~ @centros)
-			{
-				printf "deuda: " . $deudaCentros{$_};
-				printf RESULTADO "++;".$_[1].";". $_ . ";0;". $_[0]." Trimestre 2016;". $saldo.";".$saldo.";-;". ($saldo + $deudaCentros{$_}) . "\n"; 
-				#$saldo +=$deudaCentros{$_};
-			}
-
-			foreach $registro (@registrosBuscados)
-			{
-				@campos = split ";" , $registro;
-				if( $campos[2] eq $_)
-				{
-					$campos[5] =~ s/,/./;
-					$restante = $saldo - $campos[5];
-					chomp($campos[5]);
-					printf $campos[0] . "   ". $campos[1] . "  ". $campos[2] . "   ". $campos[3]. "  ". $campos[4] . "  ". $campos[5] . "  " . $restante . "      ";
-
-printf RESULTADO $campos[0] . ";". $campos[1] . ";". $campos[2] . ";". $campos[3]. ";". $campos[4] . ";". $campos[5] . ";" . ($restante+$deudaCentros{$_}) .";";
-
-					$saldo -= $campos[5];
-					if($saldo < 0)
-					{
-						printf "Presupuesto excedido";
-						printf RESULTADO "Presupuesto excedido";
-					}
-					else
-					{
-						printf RESULTADO "-";
-					}
-					printf "\n";
-					printf RESULTADO "\n";
-				}
-			}
-			if($saldo < 0)
-			{
-				$deudaCentros{$_} += $saldo;
-			}
-			else
-			{
-				$deudaCentros{$_} += 0;
-			}
-		}
-close(RESULTADO);
-}
-
-sub mostrarMenuOrden
-{
-	while ($orden < 1 || $orden > 2)
-	{
-		printf "Seleccione orden de los campos para ordenar los presupuestos sancionados \n";
-		printf "1- Codigo Centro/Trimestre \n";
-		printf "2- Trimestre/Codigo Centro \n";
-	
-		$_[0] = <STDIN>;
-	}
-	
-}
-#------------------------------------------------------------------------------
-#Aca arranca el script
-@registrosBuscados;
-%deudaCentros;
-%presTrimestre;
-$path ="/home/marcelo/Descargas/SistemasOperativos/datos";
-mostrarMenu;
-while ($opcion < 1 || $opcion > 3)
-{
-	printf "Ingrese una opcion correcta \n \n";
-	mostrarMenu;
-}
-
-#Muestro listado de presupuesto sancionado
-if ($opcion == 1)
-{
-
-	printf "Ingrese año de presupuesto sancionado que quiera listar (2015 o 2016)";
-	$anio = <STDIN>;
-
-	#Valido que el año sea correcto
-	while($anio != 2015 && $anio != 2016)
-	{
-		printf "Ingrese año de presupuesto sancionado que quiera listar (2015 o 2016)";
-		$anio = <STDIN>;
-	}
-	chomp($anio);
-
-	#$ruta = $DIRMAE . "/sancionado-" . $anio . ".csv"; esta deberia ser la ruta
-	#Uso una ruta absoluta por el momento.
-	$ruta = $path ."/sancionado-" . $anio . ".csv";
-
-	#abro el archivo
-	open ($presSancionado,'<',$ruta);
-		
-	#leo primera linea que no sirve de nada
-	$primera = <$presSancionado>;
-	
-	#valido que el orden ingresado sea el correcto
-	$orden = -1;
-	mostrarMenuOrden ($orden);
-
-	#Fijo el orden para mostrar el listado
-	if($orden == 1)
-	{
-		($primero,$segundo) = (0,1);
-	}	
-	else
-	{
-		($primero,$segundo)=(1,0);
-	}
-
-	printf "Codigo Centro		Trimestre		Total Sancionado \n";
-	while ($linea = <$presSancionado>)
-	{
-		#Obtengo los campos del registro separandolos.
-		@campos = split ";" , $linea;
-
-		#reemplazo coma por punto para poder sumar doubles
-		$campos[2] =~ s/,/./;
-		$campos[3] =~ s/,/./;
-
-		#cambio C por c para que quede ordenado 'cuarto trimestre'
-		$campos[1] =~ s/C/c/;
-		$presHash{$campos[$primero] . "           " . $campos[$segundo]} = $campos[2] + $campos[3];
-	}
-
-	#Muestro listado de presupuesto sancionado con el orden indicado.
-	foreach (sort keys(%presHash))
-	{	
-		$gastado = $presHash{$_};
-		if( index($_,"cuarto") != -1)
-		{
-			$_ =~ s/c/C/;
-		}
-		printf $_ . "                " . $gastado . "\n";
-	}
-
-
-}#fin opcion 1
-
-
-if ($opcion == 3)
-{
-	$i = 0;
-	#Cargo todos los archivos que empiecen con 'ejecutado'
-	while ( <$path/ejecutado*>)
-	{
-		$nombresArchivos[$i] = $_;
-		$i++;
-	}
-
-	#Abro archivo de presupuesto sancionado de año corriente
-	open($sancionado,'<',$path. "/sancionado-2016.csv");
-
-	#guardo los cuatrimestres en una lista en ves de estar preguntando uno por uno	
-	print "Ingrese la lista de trimestres a filtrar (1,2,3,4) separados por comas, si no ingresa ningun trimestre asume que quiere todos:";
-	$linea=<STDIN>;
-	chop $linea;	
-	@campos=split (",", $linea);
-	@trimestres;
-	if (! @campos){
-		#si esta vacia quiere todos
-		@trimestres[0]="Primer";
-		@trimestres[1]="Segundo";
-		@trimestres[2]="Tercer";
-		@trimestres[3]="Cuarto";
+#agrega token o rango
+sub Filtro::add{
+	my $self=shift;
+	if (@_[0]=~/\*/) {
+		push($self->{rangos}, @_[0]);
 	}
 	else{
+		$self->{tokens}->{@_[0]}=undef;
+	}
+}
+
+sub Filtro::set_aceptar_todo{
+	my $self=shift;
+	$self->{aceptar_todo}=1;
+}
+
+#retorna true si coincide con alguno de los tokens o rangos agregados.
+#si flag aceptar_todo esta activa acepta todo
+sub Filtro::filtrar{
+	$self=shift;
+	if ($self->{aceptar_todo}){
+		return 1;
+	}
+	if (exists($self->{tokens}->{$_[0]})){
+		return 1;
+	}
+	foreach $rango (@{$self->{rangos}}){
+		$aux=$rango;							
+		$rango=~s/\*//;
+		if ($_[0]=~/^$rango/){
+			return 1;
+		}
+		$rango=$aux;
+	}
+	return 0;
+}
+
+###Termina Objeto Filtro#####
+
+sub getAnio{
+	print "Ingrese año:";
+	my $anio=<STDIN>;
+	chop($anio);
+	return $anio;
+}
+		
+
+#retorna un objeto filtro seteado para filtrar trimestres
+sub getFiltroTrimestres{
+	print "Ingrese la lista de trimestres a filtrar (1,2,3,4) separados por comas,\n";
+	print "si no ingresa ningun trimestre se asume que quiere todos:";
+	
+	my $anio=shift; 
+	my $filtro;
+	my $linea=<STDIN>;
+	chop $linea;	
+	my @campos=split (",", $linea);
+	if (! @campos){
+		$filtro=Filtro->new(@trimestres);
+	}
+	else{
+		$filtro=Filtro->new();
 		#remplazo valores numericos por strings
 		foreach $trimestre (@campos){
 			if ($trimestre=~ /^\s*1\s*$/){
-				push @trimestres,"Primer";
+				$filtro->add($trimestres[0]);
 			}
 			elsif ($trimestre=~ /^\s*2\s*$/){
-				push @trimestres, "Segundo";
+				$filtro->add($trimestres[1]);
 			}
 			elsif ($trimestre=~ /^\s*3\s*$/){
-				push @trimestres, "Tercer";
+				$filtro->add($trimestres[2]);
 			}
 			elsif ($trimestre=~ /^\s*4\s*$/){
-				push @trimestres, "Cuarto";
+				$filtro->add($trimestres[3]);
 			}
 			else{
-				die("error: cuatrimestres no valido");
+				die ("error: trimestre no valido $trimestre");
 			}
 		}
 	}
-	#hago lo mismo con los centros
+	return $filtro;
+}
+
+sub getFiltroCentros{
 	print "Ingrese centros a filtrar, puede ser una lista, en la lista puede haber rangos (centro1,centro2,rango), si no\n";
 	print  "ingresa nada asume que quiere todos:";
-	$linea=<STDIN>;
+	my $linea=<STDIN>;
 	chop $linea;
-	@centros=split (",", $linea);
-	#elimino espacios en blancos
-	if (@centros){
-		foreach $centro (@centros){
-			#elimino posibles espacios ingresados por el usario
-			$centro=~ s/^\s*//;
-			$centro=~ s/\s*$//;
-		}
+	my @centros=split (",", $linea);
+	my $filtro=Filtro->new();
+	if (!@centros){
+		$filtro->set_aceptar_todo();
+		return $filtro;
 	}
-	printf "ID	Fecha	Centro               Actividad    	Trimestre         Importe    Saldo  Control \n";
-	#por cada trimestre en la lista
-	foreach	$trimestre (@trimestres){
-
-		splice (@registrosBuscados);
-		undef %{$presTrimestre};
-		
-		#Cargo presupuesto sancionado para cada centro en la lista
-		cargarPresupuestos (%presTrimestre, $trimestre);
-
-		#si el array esta vacio, cargo todos
-		if (!@centros)
-		{
-			@centros = keys(%presTrimestre);
-		}
-
-		#Si es un rango, cargo los correspondientes al rango
-		elsif (index($centros[0],"*") != -1)
-		{
-			$rango = substr($centros[0],0,index($centros[0],"*"));
-			@centros = cargarCentrosPorRango($rango,keys(%presTrimestre));
-			#no se por qué pero no se agrega el centro que corresponde al rango
-			#asi que lo agrego aca
-			push(@centros,$rango);
-		}
-		$i = 0;
-
-		#Busco todos los registros del trimestre indicado
-		buscarRegistrosPorTrimestreYCentros ($trimestre, @registrosBuscados, @centros);
-
-
-		$fecha = obtenerFechaInicioTrimestre($trimestre);
-		calcularYMostrarSaldos ($trimestre,$fecha,%presTrimestre, @registrosBuscados,@centros,%deudaCentros);
+	#elimino espacios en blancos y agrego a filtro
+	foreach $centro (@centros){
+		$centro=~ s/^\s*//;
+		$centro=~ s/\s*$//;
+		$filtro->add($centro);
 	}
-close($sancionado);
-
+	return $filtro;
 }
 
 
 
+sub getPresupuestoTrimestres{
+	my %presupuesto_trimestres=($trimestres[0], {}, $trimestres[1], {}, $trimestre[2], {}, $trimestre[3], {});
+	open (my $archivo, '<', $path."/sancionado-".$_[0].".csv") or die($!);
+	my $linea=<$archivo>;
+	while ($linea=<$archivo>){
+		chop($linea);
+		my @campos=split(';', $linea);
+		#reemplazo coma por punto para poder sumar doubles
+		$campos[2] =~ s/,/./;
+		$campos[3] =~ s/,/./;
+		$presupuesto_trimestres{$campos[1]}->{$campos[0]}=$campos[2]+$campos[3];
+	}
+	return %presupuesto_trimestres;
+}
 
+sub getArchivoSalida{
+	print "Ingrese path archivo de salida\n";
+	print "Si no ingresa nada, solo imprime por pantalla:";
+	my $linea=<STDIN>;
+	if ($linea eq "\n"){
+		return undef;
+	}
+	chop($linea);
+	return $linea;
+}
+
+sub getInicioTrimestres{
+	open(my $trimestres, '<', $path."/trimestres.csv") or die($!);
+	my $linea=undef;
+	my %inicio_trimestres;
+	$linea=<$trimestres>;
+	while ($linea=<$trimestres>){
+		chop($linea);
+		my @campos = split ";" , $linea;
+		if ($campos[0] eq $_[0]){
+			(my $dia, my $mes, my $anio)=split "/", $campos[2];
+			my $inicio=$anio.$mes.$dia;
+			if ($campos[1] eq $trimestres[0]){
+				$inicio_trimestres{$trimestres[0]}=$inicio;
+			}
+			elsif ($campos[1] eq $trimestres[1]){
+				$inicio_trimestres{$trimestres[1]}=$inicio;
+			}
+			elsif ($campos[1] eq $trimestres[2]){
+				$inicio_trimestres{$trimestres[2]}=$inicio;
+			}
+			else{
+				$inicio_trimestres{$trimestres[3]}=$inicio;
+			}
+		}
+	}
+	return %inicio_trimestres;
+}
+
+sub getGastosPlanificados{
+	my %gastos_planificados;
+	open(my $planes, '<', $path."/tabla-AxC.csv") or die($!);
+	my $linea;
+	$linea=<$planes>;
+	while ($linea=<$planes>){
+		chop $linea;
+		(my $actividad, my $centro)=split ";", $linea;
+		if (! defined($gastos_planificados{$centro})){
+			$gastos_planificados{$centro}={};
+		}
+		$gastos_planificados{$centro}->{$actividad}=undef;
+	}
+	return %gastos_planificados;
+}
+
+sub getNumActividades{
+	my %num_actividades;
+	open(my $nombres, '<', $path."/actividades.csv") or die($!);
+	my $linea;
+	$linea=<$nombres>;
+	while ($linea=<$nombres>){
+		chop $linea;
+		my @campos=split(";", $linea);
+		$num_actividades{$campos[3]}=$campos[0];
+	}
+	return %num_actividades;
+}
+
+sub getCentrosNombres{
+	my %centros_nombres;
+	open (my $nombres, '<', $path."/centros.csv") or die($!);
+	my $linea;
+	$linea=<$nombres>;
+	while ($linea=<$nombres>){
+		chop $linea;
+		my @campos=split(";", $linea);
+		$centros_nombres{$campos[0]}=$campos[1];
+	}
+	close($nombres);
+	return %centros_nombres;
+}
+
+sub CargarRegistros{
+	my @regitros;
+	foreach my $ruta (<$path/ejecutado_$_[0]*>){
+		open(my $archivo, '<', $ruta) or die $!;
+		my $linea;
+		$linea=<$archivo>;
+		while ($linea=<$archivo>){
+			chop($linea);
+			my @campos=split ";", $linea;
+			if ($_[2]->filtrar($campos[2]) && $_[1]->filtrar($campos[4])){
+				push(@registros, $linea);
+			}
+		}
+		close($archivo);
+	}
+	return @registros;
+}
+
+sub ordenarPorCentroYFecha{
+	@campos_a=split(';',$_[0]);
+	@campos_b=split(';',$_[1]);
+	if (@campos_a[2] lt @campos_b[2]){
+		return -1;
+	}
+	elsif (@campos_a[2] gt @campos_b[2]){
+		return 1;
+	}
+	elsif (@campos_a[1] < @campos_b[1]){
+		return -1;
+	}
+	elsif (@campos_a[1] > @campos_b[1]){
+		return 1;
+	}
+	return 0;
+}
+
+sub ultimo_registro_centro{
+	$longitud=@registros;
+	if ($longitud == $_[1]+1){
+		return 1;
+	}
+	my @campos=split ";", $registros[$_[1]+1];
+	if ($_[0] ne $campos[2]){
+		return 1;
+	}
+	return 0;
+}
+
+sub actividad_planeada{
+	my $num_act=$num_actividades{$_[1]};
+	return exists($gastos_planificados{$_[0]}->{$num_act});
+}
+
+sub calcularYMostrarSaldos(){
+	@registros=sort {ordenarPorCentroYFecha($a, $b)} @registros;
+	my $linea=getArchivoSalida();
+	my $out=undef;
+	if ($linea){
+		open($out, '>', $linea) or die($!);
+	}
+	$encabezado="ID;FECHA MOV;CENTRO;ACTIVIDAD;TRIMESTRE;IMPORTE;SALDO por TRIMESTRE;CONTROL;SALDO ACUMULADO\n";
+	if ($out){
+		print $encabezado;
+	}
+	print $encabezado;
+	my $centro="";
+	my $trimestre="";
+	my $saldo=0;
+	my $saldo_acumulado=0;
+	$i=0;
+	foreach my $registro (@registros){
+		my @campos=split (';', $registro);
+		if ($centro ne $campos[2] || $trimestre ne $campos[4]){
+			#empieza nuevo trimestre o centro
+			$saldo=$presupuesto_trimestres{$campos[4]}->{$campos[2]};
+			if ($centro ne $campos[2]){
+				$saldo_acumulado=$saldo;
+			}
+			else{
+				$saldo_acumulado=$saldo+$saldo_acumulado;
+			}
+			$centro=$campos[2];
+			$trimestre=$campos[4];
+			#reemplazo . por coma para imprimirlo
+			$saldo=~ s/\./,/;
+			$saldo_acumulado=~ s/\./,/;
+			$saldo_final='';
+			if (ultimo_registro_centro($centro, $i)){
+				$saldo_final='(*)';
+			}
+			my $salida="(++);".$inicio_trimestres{$trimestre}.";".$centro.";0;".$trimestre.";".'"'.$saldo.'"'.";".'"'.$saldo.'"'.";-;".'"'.
+			$saldo_acumulado.$saldo_final.'"'."\n";
+			print $salida;	
+			if ($out){
+				print $out $salida;
+			}
+			$saldo=~ s/,/./;
+			$saldo_acumulado=~ s/,/./;
+		}
+		else{
+			my $importe=$campos[5];
+			my $control='';
+			$importe=~ s/,/./;
+			$saldo-=$importe;
+			if ($saldo<0){
+				$control="presupuesto excedidio";
+			}
+			if (!actividad_planeada($centro, $campos[3])){
+				if ($control){
+					$control=$control." ";
+				}
+				$control=$control."gasto no planificado";
+			}
+			if (! $control){
+				$control='-';
+			}
+			$saldo_acumulado-=$importe;
+			$importe=~ s/\./,/;
+			$saldo=~ s/\./,/;
+			$saldo_acumulado=~ s/\./,/;
+			my $salida=$campos[0].";".$campos[1].";".$campos[2].";".$campos[3].";".$campos[4].";".'"'.$importe.'"'.";".'"'.$saldo.'"'.";".$control.";";
+			if (ultimo_registro_centro($centro, $i)){
+				$salida=$salida.'"'.$saldo_acumulado."(*)".'"'."\n";
+			}else{
+				$salida=$salida.'"'.$saldo_acumulado.'"'."\n";
+			}
+			print $salida;
+			if ($out){
+				print $out $salida;
+			}
+			$saldo=~ s/,/./;
+			$saldo_acumulado=~ s/,/./;
+		}
+		++$i;
+	}
+}
+
+sub ordenarPorCentroTrimestre{
+	#Obtengo los campos del registro separandolos.
+	@campos_a = split ";" , $_[0];
+	@campos_b = split ";" , $_[1];
+
+	#cambio C por c para que quede ordenado 'cuarto trimestre'
+	$campos_a[1] =~ s/C/c/;
+	$campos_b[1]=~ s/C/c/;
+	
+	if ($campos_a[0] lt $campos_b[0]){
+		return -1;
+	}
+	if ($campos_a[0] gt $campos_b[0]){
+		return 1;
+	}
+	if ($campos_a[1] lt $campos_b[1]){
+		return -1;
+	}
+	if ($campos_a[1] gt $campos_b[1]){
+		return 1;
+	}
+	return 0;
+}
+
+sub ordenarPorTrimestreCentro{
+	#Obtengo los campos del registro separandolos.
+	@campos_a = split ";" , $_[0];
+	@campos_b = split ";" , $_[1];
+
+	#cambio C por c para que quede ordenado 'cuarto trimestre'
+	$campos_a[1] =~ s/C/c/;
+	$campos_b[1]=~ s/C/c/;
+	
+	if ($campos_a[1] lt $campos_b[1]){
+		return -1;
+	}
+	if ($campos_a[1] gt $campos_b[1]){
+		return 1;
+	}
+	if ($campos_a[0] lt $campos_b[0]){
+		return -1;
+	}
+	if ($campos_a[1] gt $campos_b[1]){
+		return 1;
+	}
+	return 0;
+}
+
+#empieza Script--------------------------------------------------
+
+#variable harcadodeada a borrar
+$path="/home/pepe/Escritorio/gaspar/cosas/gaspar/contenido_pendrive/programacion/sistemas_operativos/tp/SistemasOperativos/datos";
+
+printf "Elija el listado que desee generar: \n";
+printf "1- Listado de presupuesto sancionado \n";
+printf "2- Listado de presupuesto ejecutado \n";
+printf "3- Listado de control de presupuesto ejecutado \n";
+$opcion = <STDIN>;
+chop $opcion;
+if ($opcion!=1 && $opcion!=3 && $opcion!=2){
+	die("error:opcion $opcion incorrecta");
+}
+
+#pido anio a procesar
+$anio=getAnio;
+
+if ($opcion==1){
+	my $ruta = $path ."/sancionado-" . $anio . ".csv";
+	open($sancionado, '<',$ruta) or die($!);
+	%centros_nombres=getCentrosNombres();
+	printf "Seleccione orden de los campos para ordenar los presupuestos sancionados \n";
+	printf "1- Codigo Centro/Trimestre \n";
+	printf "2- Trimestre/Codigo Centro \n";
+	my $orden=<STDIN>;
+	chop $orden;
+	if ($orden!=1 && $orden!=2){
+		die("error: opcion $opcion incorrecta");
+	}
+	my %centros_nombres=getCentrosNombres();
+	$linea=<$sancionado>;
+	my @registros;
+	while ($linea=<$sancionado>){
+		chop $linea;
+		my @campos=split ";", $linea;
+		$campos[2]=~ s/,/./;
+		$campos[3]=~ s/,/./;
+		$total=$campos[2]+$campos[3];
+		$total=~ s/\./,/;
+		$linea=$centros_nombres{$campos[0]}.";".$campos[1].";".'"'.$total.'"'."\n";
+		push(@registros, $linea);
+	}
+	if ($orden==1){
+		@registros=sort {ordenarPorCentroTrimestre($a, $b)} @registros;	
+	}else{
+		@registros=sort {ordenarPorTrimestreCentro($a, $b)} @registros;
+	}
+	my $ruta=getArchivoSalida();
+	my $out=undef;
+	if ($ruta){
+		open($out, '>', $ruta) or die($!);
+	}
+	my $encabezado="Centro;Año presupuestario $anio;Total Sancionado\n";
+	print $encabezado;
+	if ($out){
+		print $out $encabezado;
+	}
+	foreach (@registros){
+		print $_;
+		if ($out){
+			print $out $_;
+		}
+	}
+	exit;
+}
+
+if ($opcion==2){
+	
+}
+
+
+#cargo nombres de trimestres en array para ahorame trabajo
+@trimestres=("Primer Trimestre $anio", "Segundo Trimestre $anio", "Tercer Trimestre $anio", "Cuarto Trimestre $anio");
+#cargo fecha de inicio de trimestre en hash, solo los de anio
+%inicio_trimestres=getInicioTrimestres($anio);
+#creo un hash que contendra un hash para trimestre, dentro del hash de cada trimestre estan los centros y sus presupuestos
+%presupuesto_trimestres=getPresupuestoTrimestres($anio);
+%num_actividades=getNumActividades;
+%gastos_planificados=getGastosPlanificados;
+#este objeto me ayuda a filtara trimestres
+$filtro_trimestres=getFiltroTrimestres($anio);
+$filtro_centros=getFiltroCentros();
+#carga los registros que pasan la filtracion
+@registros=CargarRegistros($anio, $filtro_trimestres, $filtro_centros);
+#hace todo el trabajo y lo imprime por pantalla
+calcularYMostrarSaldos();	
