@@ -173,21 +173,20 @@ function is_activity_valid(){
 function is_trimester_valid(){
 	#TESTEADO
 	VALID=1 #FALSE
+	#ANO ACTUAL
+	CURRENT_YEAR=$(date +%Y)
 	# Primero veo que el timestre pertenezca al archivo.
 	while read -r line
 	do
 		IFS=';'
 		
 		read -r ANO_TRI NOM_TRI FDESDE_TRI FHASTA_TRI <<< "$line"
-		if [ "$1" = "$NOM_TRI" ]
+		if [ "$1" = "$NOM_TRI" -a "$CURRENTYEAR" = "$ANO_TRI"]
 		then 
 			VALID=0 #TRUE
 		fi
 	
 	done < $DIRMAE/trimestres.csv
-
-	# TODO No entiendo a lo que se refiere con verificar lo siguiente.
-	# Luego que el trimestre sea del año presupuestario corriente.
 	
 	return $VALID
 
