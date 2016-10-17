@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #agregar como precondicion que solo se revisaran archivos, no directorios.
 
 #DIRLOG="." #SACAR PARA ENTREGA, SE SUPONE QUE DIRLOG SE EXPORTA DESDE INITEP.
@@ -12,7 +14,7 @@ while read -r line
 do
 	primerCampo=$(sed 's/;.*.*$//' <<< $line)
 	listaProvincias+="$primerCampo "
-done < $GRUPO03/$DIRMAE/provincias.csv #ACA VA EL ARCHIVO PROVINCIAS DE LA CARPETA DE MAESTROS
+done < $GRUPO/$DIRMAE/provincias.csv #ACA VA EL ARCHIVO PROVINCIAS DE LA CARPETA DE MAESTROS
 listaProvincias=$(sed 's/COD_PROV '// <<<$listaProvincias)
 
 #Obtengo la fecha de hoy en variables separadas
@@ -32,7 +34,7 @@ do
         logep -i "Demonep" "Demonep ciclo nro. $ciclos"
 
         #Obtengo y recorro lista de archivos
-	cd $GRUPO03/$DIRREC #ACOMODAR PARA LA ENTREGA PARA QUE ENTRE EN GRUPO/$DIRREC
+	cd $GRUPO/$DIRREC #ACOMODAR PARA LA ENTREGA PARA QUE ENTRE EN GRUPO/$DIRREC
         listFiles=$(ls -m | sed 's/,// g')
 	cd ..
         for file in $listFiles
@@ -60,7 +62,7 @@ do
 		fi
 
                 #devuelve 0 si el archivo esta vacio, distinto de 0 si tiene lineas.
-		cd $GRUPO03/$DIRREC #ARREGLAR PARA LA ENTREGA
+		cd $GRUPO/$DIRREC #ARREGLAR PARA LA ENTREGA
                 isEmpty=$(grep '^.' -c $file)
 		cd ..
 		if [[ $isEmpty -eq 0 ]]
@@ -160,14 +162,14 @@ do
 		then
 			logep -i "Demonep" "Archivo aceptado"
 			#INVOCAR A MOVEP Y MOVERLO A DIROK
-			movep "$GRUPO03/$DIRREC/$file" "$GRUPO03/$DIROK"
+			movep "$GRUPO/$DIRREC/$file" "$GRUPO/$DIROK" "procep"
 		else
-			movep "$GRUPO03/$DIRREC/$file" "$GRUPO03/$DIRNOK" #INVOCAR A MOVEP Y MOVERLO A DIRNOK
+			movep "$GRUPO/$DIRREC/$file" "$GRUPO/$DIRNOK" "procep" #INVOCAR A MOVEP Y MOVERLO A DIRNOK
 		fi
 	done
 	
 	#Verifico si hay archivos en Dirok. Si hay archivos y no arranco el procep, lo ejecuto.
-	cd $GRUPO03/$DIROK #VERIFICAR ESTO PARA LA ENTREGA. SE DEBE EXPORTAR LA VARIABLE.
+	cd $GRUPO/$DIROK #VERIFICAR ESTO PARA LA ENTREGA. SE DEBE EXPORTAR LA VARIABLE.
 	if [ "$(ls -l)" != 'total 0' ] #Si hay archivos en DIROK
 	then
 	#chequear si arranco el procep o no
