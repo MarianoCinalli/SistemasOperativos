@@ -9,19 +9,28 @@ movep() {
 	then
 		LOGGER="movep"
 	fi
-	if [ ${1%/*} == $2 ]
+	SOURCE=${1%/*}\/
+	if [ $SOURCE == $2 ]
 	then
 		logep -e $LOGGER "El origen y el destino son iguales"
+		echo "El origen y el destino son iguales"
 		return
 	fi 
+	if [ ! -d $SOURCE ]
+	then
+		logep -e $LOGGER "La carpeta origen no existe"
+		return
+	fi
 	if [ ! -f $1 ]
 	then
 		logep -e $LOGGER "El archivo de origen no existe"
+		echo "El archivo de origen no existe"
 		return
 	fi
 	if [ ! -d $2 ]
 	then
 		logep -e $LOGGER "La carpeta destino no existe"
+		echo "La carpeta destino no existe"
 		return
 	fi
 	##Me quedo con el nombre del archivo
@@ -39,11 +48,16 @@ movep() {
 		if [ -d $DUPLICATED ]
 		then
 			cd $DUPLICATED
-			while [ -f "$FILENAME.$COUNT" ]
-			do
-				COUNT=$((COUNT+1))
-			done
-			$(mv "$1" "$2$DUPLICATED/$FILENAME.$COUNT")
+			if [ ! -f "$FILENAME" ]
+			then
+				$(mv "$1" "$2$DUPLICATED/$FILENAME")
+			else
+				while [ -f "$FILENAME.$COUNT" ]
+				do
+					COUNT=$((COUNT+1))
+				done
+				$(mv "$1" "$2$DUPLICATED/$FILENAME.$COUNT")
+			fi
 		else
 			mkdir $DUPLICATED
 			$(mv "$1" "$2$DUPLICATED/$FILENAME.$COUNT")
