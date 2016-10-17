@@ -275,14 +275,15 @@ done
 touch ./dirconf/instalep.conf
 ACTUALDATE=$(date +"%d/%m/%Y %T")
 cd dirconf
-echo "DIRBIN=$ACTUALPATH/$DIRBIN=$USER=$ACTUALDATE" >> instalep.conf
-echo "DIRMAE=$ACTUALPATH/$DIRMAE=$USER=$ACTUALDATE" >> instalep.conf
-echo "DIRREC=$ACTUALPATH/$DIRREC=$USER=$ACTUALDATE" >> instalep.conf
-echo "DIROK=$ACTUALPATH/$DIROK=$USER=$ACTUALDATE" >> instalep.conf
-echo "DIRPROC=$ACTUALPATH/$DIRPROC=$USER=$ACTUALDATE" >> instalep.conf
-echo "DIRINFO=$ACTUALPATH/$DIRINFO=$USER=$ACTUALDATE" >> instalep.conf
-echo "DIRLOG=$ACTUALPATH/$DIRLOG=$USER=$ACTUALDATE" >> instalep.conf
-echo "DIRNOK=$ACTUALPATH/$DIRNOK=$USER=$ACTUALDATE" >> instalep.conf
+echo "DIRBIN=$DIRBIN=$USER=$ACTUALDATE" >> instalep.conf
+echo "DIRMAE=$DIRMAE=$USER=$ACTUALDATE" >> instalep.conf
+echo "DIRREC=$DIRREC=$USER=$ACTUALDATE" >> instalep.conf
+echo "DIROK=$DIROK=$USER=$ACTUALDATE" >> instalep.conf
+echo "DIRPROC=$DIRPROC=$USER=$ACTUALDATE" >> instalep.conf
+echo "DIRINFO=$DIRINFO=$USER=$ACTUALDATE" >> instalep.conf
+echo "DIRLOG=$DIRLOG=$USER=$ACTUALDATE" >> instalep.conf
+echo "DIRNOK=$DIRNOK=$USER=$ACTUALDATE" >> instalep.conf
+echo "GRUPO=$ACTUALPATH=$USER=$ACTUALDATE" >> instalep.conf
 echo "DIRSPACE=$SPACE=$USER=$ACTUALDATE" >> instalep.conf
 cd ..
 

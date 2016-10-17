@@ -9,6 +9,9 @@
 #
 #################################################################################################################################
 
+# Ejecuto el movep (el movep ejecuta el logep)
+source ./movep
+
 # Funciones internas -----------------------------------------------------------------------------------------
 
 # Funciones validadoras --------------------------------------------------------------
@@ -31,7 +34,7 @@ function is_file_unique(){
 
 	is_unique=1 # FALSE
 
-	if [ ! -f $GRUPO03/DIRPROC/proc/$1 ]; then
+	if [ ! -f $GRUPO/$DIRPROC/proc/$1 ]; then
 
     		is_unique=0 # TRUE
 	fi
@@ -262,10 +265,12 @@ function process_file(){
 		# Para cada linea en el archivo
 
 		else
-			#TODO movep $1 $DIRNOK
+			movep "$GRUPO/$DIRMAE/$1" "$GRUPO/$DIRNOK/" "procep"
+			logep -i "procep" "Estructura inesperada. Se rechaza el archivo $1"
 		fi
 	else
-		#TODO movep $1 $DIRNOK
+		movep "$GRUPO/$DIRMAE/$1" "$GRUPO/$DIRNOK/" "procep"
+		logep -i "procep" "Archivo Duplicado. Se rechaza el archivo $1"
 	fi
 
 	return $lines_processed
@@ -290,8 +295,8 @@ function process_file_register_by_register(){
 	year_of_file=$(echo $filename | cut -d"_" -f2)
 
 	# (TODO verificar que esten bien las rutas) Creo el archivo de registros invalidos y validos	
-	touch $DIRPROC/ejecutado-$year_of_file
-	touch $DIRPROC/rechazado-$year_of_file
+	touch $GRUPO/$DIRPROC/ejecutado-$year_of_file
+	touch $GRUPO/$DIRPROC/rechazado-$year_of_file
 
 	while read -r line
 	do
@@ -332,35 +337,35 @@ function process_file_register_by_register(){
 						then
 							is_register_valid=0 #TRUE
 						else
-							#TODO logep "El registro, $line, tiene gastos invalidos" "$DIRLOG/Procep.log"
+							logep -i "procep" "El registro, $line, tiene gastos invalidos"
 					else
-						#TODO logep "El registro, $line, tiene fecha invalida" "$DIRLOG/Procep.log"
+						logep -i "procep" "El registro, $line, tiene fecha invalida"
 				else
-					#TODO logep "El registro, $line, tiene trimestre invalido" "$DIRLOG/Procep.log"
+					logep "procep" "El registro, $line, tiene trimestre invalido"
 
-				#TODO logep "El registro, $line, tiene actividad invalida" "$DIRLOG/Procep.log"
+				logep "procep" "El registro, $line, tiene actividad invalida"
 		else
-			#TODO logep "El registro, $line, tiene codigo de central invalido" "$DIRLOG/Procep.log"
+			logep "procep" "El registro, $line, tiene codigo de central invalido"
 		
 		if $is_register_valid
 		then
 			# 6to grabar registro valido. Aumentar contador
 			
-			echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE" >> $DIRPROC/ejecutado-$year_of_file
+			echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE" >> $GRUPO/$DIRPROC/ejecutado-$year_of_file
 			((valid_registers++))
 		else
 			# 7mo grabar registro invalido. Aumentar contador
 			
-			echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE" >> $DIRPROC/rechazado-$year_of_file
+			echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE" >> $GRUPO/$DIRPROC/rechazado-$year_of_file
 			((invalid_registers++))
 		
 		
 		# Grabar log registros validos e invalidos.
-		#TODO logep "Se procesaron $valid_registers registros validos." "$DIRLOG/Procep.log"
-		#TODO logep "Se procesaron $valid_registers registros invalidos." "$DIRLOG/Procep.log"
+		logep "procep" "Se procesaron $valid_registers registros validos."
+		logep "procep" "Se procesaron $valid_registers registros invalidos."
 		
 		# Mover archivo procesado.
-		#TODO movep "$1" "$DIRPROC/ejecutado/$filename"
+		movep "$GRUPO/$DIRMAE/$1" "$GRUPO/$DIRPROC/ejecutado/$filename"
 
 	done < $1
 
@@ -376,6 +381,6 @@ else
 	# 2do informar cantidad de archivos a procesar
 	CANTIDADARCHIVOS=$(ls -1 | wc -l)
 	echo "$CANTIDADARCHIVOS"
-		
+	logep -i "procep" "Cantidad de archivos a procesar: $CANTIDADARCHIVOS" 
 	# 3ro procesar archivos
 	process_files_in_folder
