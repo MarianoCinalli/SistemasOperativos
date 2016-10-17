@@ -61,63 +61,36 @@ sub getAnio{
 }
 		
 
-#retorna un objeto filtro seteado para filtrar trimestres
-sub getFiltroTrimestres{
-	print "Ingrese la lista de trimestres a filtrar (1,2,3,4) separados por comas,\n";
-	print "si no ingresa ningun trimestre se asume que quiere todos:";
-	
-	my $anio=shift; 
-	my $filtro;
-	my $linea=<STDIN>;
-	chop $linea;	
-	my @campos=split (",", $linea);
-	if (! @campos){
-		$filtro=Filtro->new(@trimestres);
-	}
-	else{
-		$filtro=Filtro->new();
-		#remplazo valores numericos por strings
-		foreach $trimestre (@campos){
-			if ($trimestre=~ /^\s*1\s*$/){
-				$filtro->add($trimestres[0]);
-			}
-			elsif ($trimestre=~ /^\s*2\s*$/){
-				$filtro->add($trimestres[1]);
-			}
-			elsif ($trimestre=~ /^\s*3\s*$/){
-				$filtro->add($trimestres[2]);
-			}
-			elsif ($trimestre=~ /^\s*4\s*$/){
-				$filtro->add($trimestres[3]);
-			}
-			else{
-				die ("error: trimestre no valido $trimestre");
-			}
-		}
-	}
-	return $filtro;
-}
 
-sub getFiltroCentros{
-	print "Ingrese centros a filtrar, puede ser una lista, en la lista puede haber rangos (centro1,centro2,rango), si no\n";
-	print  "ingresa nada asume que quiere todos:";
+
+
+sub getFiltro{
+	#muestro mensaje
+	print $_[0];
 	my $linea=<STDIN>;
 	chop $linea;
-	my @centros=split (",", $linea);
-	my $filtro=Filtro->new();
-	if (!@centros){
-		$filtro->set_aceptar_todo();
+	my @campos=split (",", $linea);
+	my $filtro=undef;
+	if (!@campos){
+		if ($_[1]){
+			#si me pasa valores creo el filtro con esos valores
+			$filtro=Filtro->new(@{$_[1]});
+		}else{
+			#sino creo uno que acepte todo
+			$filtro=Filtro->new();
+			$filtro->set_aceptar_todo();
+		}
 		return $filtro;
 	}
+	$filtro=Filtro->new();
 	#elimino espacios en blancos y agrego a filtro
-	foreach $centro (@centros){
-		$centro=~ s/^\s*//;
-		$centro=~ s/\s*$//;
-		$filtro->add($centro);
+	foreach $campo (@campos){
+		$campo=~ s/^\s*//;
+		$campo=~ s/\s*$//;
+		$filtro->add($campo);
 	}
 	return $filtro;
 }
-
 
 
 sub getPresupuestoTrimestres{
@@ -203,18 +176,18 @@ sub getNumActividades{
 	return %num_actividades;
 }
 
-sub getCentrosNombres{
-	my %centros_nombres;
-	open (my $nombres, '<', $path."/centros.csv") or die($!);
+sub getNombres{
+	my %nombres;
+	open ($fnombres, '<', $path."/".$_[0]) or die($!);
 	my $linea;
-	$linea=<$nombres>;
-	while ($linea=<$nombres>){
+	$linea=<$fnombres>;
+	while ($linea=<$fnombres>){
 		chop $linea;
 		my @campos=split(";", $linea);
-		$centros_nombres{$campos[0]}=$campos[1];
+		$nombres{$campos[0]}=$campos[1];
 	}
-	close($nombres);
-	return %centros_nombres;
+	close($fnombres);
+	return %nombres;
 }
 
 sub CargarRegistros{
@@ -423,7 +396,7 @@ $anio=getAnio;
 if ($opcion==1){
 	my $ruta = $path ."/sancionado-" . $anio . ".csv";
 	open($sancionado, '<',$ruta) or die($!);
-	%centros_nombres=getCentrosNombres();
+	%centros_nombres=getNombres("centros.csv");
 	printf "Seleccione orden de los campos para ordenar los presupuestos sancionados \n";
 	printf "1- Codigo Centro/Trimestre \n";
 	printf "2- Trimestre/Codigo Centro \n";
@@ -435,12 +408,14 @@ if ($opcion==1){
 	my %centros_nombres=getCentrosNombres();
 	$linea=<$sancionado>;
 	my @registros;
+	my $total_anual=0;
 	while ($linea=<$sancionado>){
 		chop $linea;
 		my @campos=split ";", $linea;
 		$campos[2]=~ s/,/./;
 		$campos[3]=~ s/,/./;
 		$total=$campos[2]+$campos[3];
+		$total_anua+=$total;
 		$total=~ s/\./,/;
 		$linea=$centros_nombres{$campos[0]}.";".$campos[1].";".'"'.$total.'"'."\n";
 		push(@registros, $linea);
@@ -466,11 +441,85 @@ if ($opcion==1){
 			print $out $_;
 		}
 	}
+	$total_anual=~ s/\./,/;
+	my $salida="Total Anual;".$total_anual."\n";
+	print $salida;
+	if ($out){
+		print $out $salida;
+	}
+	close($out);
+	close($sancionado);
 	exit;
 }
 
+sub ordenarPorProvincia{
+	my @campos_a=split ";", $_[0];
+	my @campos_b=split ";" , $_[1];
+	if (@campos_a[4]<@campos_b[4]){
+		return -1;	
+	}
+	if (@campos_a[4]>@campos_b[4]){
+		return 1;	
+	}
+	return 0;
+}
+
 if ($opcion==2){
-	
+	my %provincias_nombres=getNombres("provincias.csv");
+	print "códigos provincias\n";	
+	foreach (keys(%provincias_nombres)){
+		print $provincias_nombres{$_}."   ".$_."\n";
+	}
+	my $filtro_provincias=getFiltro("Ingrese la lista de códigos de provincias a filtrar (1,2,3,4) separados por comas,\n"."si no ingresa ninguna provincia se asume que quiere todas:");
+	%gastos_planificados=getGastosPlanificados();
+	open(my $archivo, '<', $path."ejecutado_".$anio) or die($!);
+	my $linea=<$archivo>;
+	my $ruta=getArchivoSalida();
+	my $out=undef;
+	if ($ruta){
+		open($out, '>', $ruta) or die($!);
+	}
+	my @registros;
+	while ($linea=<$archivo>){
+		my @campos=split ';', $linea;
+		$salida=$campos[0].$campos[1].$campos[8].$campos[6].$campos[2].$campos[3].$campos[4].$campos[7];	
+	}
+	sort {ordenarPorProvincia($a, $b)} @registros;
+	my $salida="Fecha;Centro;Nom Cen;cod Act;Actividad;Trimeste;Gasto;provincia;control\n";
+	print $salida;
+	if ($out){
+		print $out $salida;
+	}
+	$i=0;
+	my @campos=split ";" , $registros[1];
+	$provincia=$campo[7];
+	my $gasto_total=0;
+	foreach (@registros){
+		my @campos_act=split ";" , $registros[$i];
+		$campos_act[6]=~ s/,/./;
+		$gasto_total+=$campos_act[6];
+		if (actividad_planeada($campos[1], $campos[3])){
+			$salida=$_."gasto fuera de la planificacion";
+		}else{
+			$salia=$_."-";
+		}
+		print $salida;
+		if ($out){
+			print $out $salida;
+		}
+		my @campos_next=split ";", $registros[$i+1];
+		if ($campos_act[7] ne $campos_next[7]){
+			#ultimo registro de provincia
+			$gasto_total=~ s/\./,/;
+			my $salida=";;;;;".'"'.$gasto_total.'"'.";".$campos_act[7]."\n";
+			print $salida;
+			if ($out){
+				print $out $salida;
+			}
+			$gasto_total=0;
+		}
+	}
+	exit;
 }
 
 
@@ -483,8 +532,9 @@ if ($opcion==2){
 %num_actividades=getNumActividades;
 %gastos_planificados=getGastosPlanificados;
 #este objeto me ayuda a filtara trimestres
-$filtro_trimestres=getFiltroTrimestres($anio);
-$filtro_centros=getFiltroCentros();
+$filtro_trimestres=getFiltro("Ingrese la lista de trimestres a filtrar (1,2,3,4) separados por comas,\n"."si no ingresa ningun trimestre se asume que quiere
+todos:", \@trimestres);
+$filtro_centros=getFiltro("Ingrese centros a filtrar, puede ser una lista, en la lista puede haber rangos (centro1,centro2,rango), si no\n"."ingresa nada asume que quiere todos:");
 #carga los registros que pasan la filtracion
 @registros=CargarRegistros($anio, $filtro_trimestres, $filtro_centros);
 #hace todo el trabajo y lo imprime por pantalla
