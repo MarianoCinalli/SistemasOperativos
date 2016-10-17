@@ -9,7 +9,7 @@ logep () {
 	then
 		printf "%b\n" "logep: la variable DIRLOG esta vacia">&2
 		return -1
-	elif [ ! -d "$DIRLOG" ]
+	elif [ ! -d "$GRUPO/$DIRLOG" ]
 	then
 		printf "%b\n" "logep: la variable DIRLOG no contiene un directorio valido">&2
 		return -1
@@ -61,7 +61,7 @@ logep () {
 	directorio_act=`pwd`
 
 	#salto a directorio de LOG
-	cd "$DIRLOG"
+	cd "$GRUPO/$DIRLOG"
 
 	fecha_hora="`date +%D` `date +%X`"
 
