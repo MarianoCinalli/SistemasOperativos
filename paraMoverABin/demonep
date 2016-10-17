@@ -7,7 +7,7 @@ source ./logep
 FECHA=$(date)
 anioActual=$(sed 's/^.* //' <<< $FECHA)
 ciclos=0
-procepPID=0
+procepPID=50000 #pongo un valor imposible de pid de proceso.
 #Obtengo una lista con los codigos de las provincias
 listaProvincias=
 while read -r line
@@ -69,7 +69,7 @@ do
 		then
 			logep -i "Demonep" "Archivo rechazado, motivo: archivo vacio"
 			aceptado=1
-		fi
+			fi
 
 		#Le saco la palabra ejecutado al nombre del archivo
                 anioFile=$(sed 's/^ejecutado_//' <<< $file)
@@ -162,9 +162,9 @@ do
 		then
 			logep -i "Demonep" "Archivo aceptado"
 			#INVOCAR A MOVEP Y MOVERLO A DIROK
-			movep "$GRUPO/$DIRREC/$file" "$GRUPO/$DIROK" "procep"
+			movep "$GRUPO/$DIRREC/$file" "$GRUPO/$DIROK" "demonep"
 		else
-			movep "$GRUPO/$DIRREC/$file" "$GRUPO/$DIRNOK" "procep" #INVOCAR A MOVEP Y MOVERLO A DIRNOK
+			movep "$GRUPO/$DIRREC/$file" "$GRUPO/$DIRNOK" "demonep" #INVOCAR A MOVEP Y MOVERLO A DIRNOK
 		fi
 	done
 	
@@ -174,14 +174,14 @@ do
 	then
 	#chequear si arranco el procep o no
 		arrancoProcep=$(ps | grep "$procepPID" -c) #DEVUELVE 0 SI NO ARRANCO PROCEP, 1 SI ARRANCO.
-		if [ $arrancoProcep -eq 0 ]
-		then	
+		if [ "$arrancoProcep" != "0" ]
+		then
+			logep -i "Demonep" "Invocacion de Procep pospuesta para el siguiente ciclo"
+		else	
 			#iniciar procep
-			procep
+			procep &
 			procepPID=$! #obtengo el PID del procep recien ejecutado
-			logep -l "Demonep" "Procep corriendo bajo el no.: $procepPID"
-		else
-			logep -i "Demonep" "Invocacion de Procep pospuesta para el siguiente ciclo"	
+			logep -l "Demonep" "Procep corriendo bajo el no.: $procepPID"	
 		fi
 	fi
 
