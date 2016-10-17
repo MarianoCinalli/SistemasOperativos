@@ -1,16 +1,189 @@
-#!/bin/bash
+#agregar como precondicion que solo se revisaran archivos, no directorios.
 
-salir(){
-	echo "demonep muerto"
-	exit 0
-}
-
-trap salir SIGTERM SIGKILL
-
-while true
+#DIRLOG="." #SACAR PARA ENTREGA, SE SUPONE QUE DIRLOG SE EXPORTA DESDE INITEP.
+source ./logep
+FECHA=$(date)
+anioActual=$(sed 's/^.* //' <<< $FECHA)
+ciclos=0
+procepPID=0
+#Obtengo una lista con los codigos de las provincias
+listaProvincias=
+while read -r line
 do
- # hacer lo que sea
- echo "demonep"
- # esperar
- sleep 60
+	primerCampo=$(sed 's/;.*.*$//' <<< $line)
+	listaProvincias+="$primerCampo "
+done < $GRUPO03/$DIRMAE/provincias.csv #ACA VA EL ARCHIVO PROVINCIAS DE LA CARPETA DE MAESTROS
+listaProvincias=$(sed 's/COD_PROV '// <<<$listaProvincias)
+
+#Obtengo la fecha de hoy en variables separadas
+fechaHoy=$(date +"%d%m%Y") #fecha de hoy en formato ddmmaaa
+diaHoy=$(sed 's/[0-9][0-9][0-9][0-9][0-9][0-9]$//' <<< $fechaHoy)
+mesHoy=$(sed 's/^[0-9][0-9]//' <<< $fechaHoy)
+mesHoy=$(sed 's/[0-9][0-9][0-9][0-9]$//' <<< $mesHoy)
+anioHoy=$(sed 's/^[0-9][0-9][0-9][0-9]//' <<< $fechaHoy)
+
+
+while [ 0 ]
+do
+	#Actualizo fecha
+	FECHA=$(date)
+        #Cuento ciclos y loggeo
+        ciclos=$(expr $ciclos + 1)
+        logep -i "Demonep" "Demonep ciclo nro. $ciclos"
+
+        #Obtengo y recorro lista de archivos
+	cd $GRUPO03/$DIRREC #ACOMODAR PARA LA ENTREGA PARA QUE ENTRE EN GRUPO/$DIRREC
+        listFiles=$(ls -m | sed 's/,// g')
+	cd ..
+        for file in $listFiles
+        do
+		#Variable que vale 0 si el archivo esta ok o 1 en caso contrario.
+		aceptado=0
+		#loggeo que se encontro un archivo nuevo.
+		logep -i "Demonep" "Archivo detectado: $file"
+	
+		#Chequeo si el nombre tiene el formato correcto.
+		#Devuelve 0 si es incorrecto.
+		formatOk=$(grep '^ejecutado_[0-9][0-9][0-9][0-9]_[0-9]\{1,2\}_[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]' -c <<< $file)
+		if [ $formatOk -eq 0 ]
+		then
+			aceptado=1
+			logep -i "Demonep" "Archivo rechazado, motivo: formato de nombre incorrecto."
+		fi
+		
+              	#devuelve 0 si no es un csv, 1 si es un csv.	
+		isTextFile=$(grep '.*\.csv$' -c <<< $file)
+		if [ $isTextFile -eq 0 ]
+		then
+			logep -i "Demonep" "Archivo rechazado, motivo: no es un archivo de texto"
+			aceptado=1
+		fi
+
+                #devuelve 0 si el archivo esta vacio, distinto de 0 si tiene lineas.
+		cd $GRUPO03/$DIRREC #ARREGLAR PARA LA ENTREGA
+                isEmpty=$(grep '^.' -c $file)
+		cd ..
+		if [[ $isEmpty -eq 0 ]]
+		then
+			logep -i "Demonep" "Archivo rechazado, motivo: archivo vacio"
+			aceptado=1
+		fi
+
+		#Le saco la palabra ejecutado al nombre del archivo
+                anioFile=$(sed 's/^ejecutado_//' <<< $file)
+                #Me quedo con el segundo campo (anio)
+                anioFile=$(sed 's/_.*_.*$//' <<< $anioFile)
+		#Verifico que el anio sea el actual
+		if [ "$anioFile" != "$anioActual" ]
+		then
+			aceptado=1
+			logep -i "Demonep" "Archivo rechazado $file, motivo: año $anioActual incorrecto"
+		fi
+
+		
+		#Verifico si la provincia en el nombre es correcta
+		#Me quedo solo con el codigo de provincia
+		provFile=$(sed 's/^ejecutado_[0-9][0-9][0-9][0-9]_//' <<< $file)
+		provFile=$(sed 's/_.*//' <<< $provFile)
+		#Itero sobre la lista de provincias
+		provOk=0
+		for provList in $listaProvincias
+		do
+			if [ "$provFile" == "$provList" ]
+			then
+				provOk=1
+			fi
+		done
+		if [[ $provOk -eq 0  ]]
+		then
+			acepatdo=1
+			logep -i "Demonep" "Archivo rechazado, motivo: provincia $provFile incorrecta"
+		fi
+	
+		#Verifico que la fecha del archivo este entre el inicio del anio presupuestario y la fecha de hoy.
+		fechaFile=$(sed 's/ejecutado_[0-9][0-9][0-9][0-9]_[0-9]\{1,2\}_//' <<< $file)
+		fechaFile=$(sed 's/\.csv$//' <<< $fechaFile) #fecha que figura en el nombre del archivo
+
+		inicioAnio=$(grep "$anioFile;Primer Trimestre $anioFile;" trimestres.csv) 
+		inicioAnio=$(sed "s/$anioFile;Primer Trimestre $anioFile;//" <<< $inicioAnio)
+		inicioAnio=$(sed "s/;.*$//" <<< $inicioAnio) #fecha de inicio del anio presupuestario
+
+		diaPresup=$(sed 's-/[0-9][0-9]/[0-9][0-9][0-9][0-9]$--' <<< $inicioAnio)
+		mesPresup=$(sed 's-^[0-9][0-9]/--' <<< $inicioAnio)
+		mesPresup=$(sed 's-/[0-9][0-9][0-9][0-9]$--' <<< $mesPresup)
+		anioPresup=$(sed 's-^[0-9][0-9]/[0-9][0-9]/--' <<< $inicioAnio)
+
+		#formato fecha de archivo aaaammdd
+		diaFile=$(sed 's/^[0-9][0-9][0-9][0-9][0-9][0-9]//' <<< $fechaFile)
+		mesFile=$(sed 's/^[0-9][0-9][0-9][0-9]//' <<< $fechaFile)
+		mesFile=$(sed 's/[0-9][0-9]$//' <<< $mesFile)
+		anioFile=$(sed 's/[0-9][0-9][0-9][0-9]$//' <<< $fechaFile)
+
+		#Verifico que la fecha del nombre del archivo sea menor o igual a la fecha de hoy
+		if [ $aceptado -eq 0 ]
+		then
+		if [ $anioFile -gt $anioHoy  ]
+		then
+        		aceptado=1
+			logep -i "Demonep" "Archivo rechazado, motivo: fecha $fechaFile incorrecta"
+        	else if [ $mesFile -gt $mesHoy -a $anioFile -eq $anioHoy ]
+                	then
+                        	aceptado=1
+                        	logep -i "Demonep" "Archivo rechazado, motivo: fecha $fechaFile incorrecta"
+                        else if [ $diaFile -gt $diaHoy -a $mesFile -eq $mesHoy -a $anioFile -eq $anioHoy ]
+                                then
+                                        aceptado=1
+                       			logep -i "Demonep" "Archivo rechazado, motivo: fecha $fechaFile incorrecta"
+                                fi
+               		 fi
+		fi
+		
+		#Verifico que la fecha del nombre del archivo sea mayor o igual a la del inicio del anio presupuestario
+		if [ $anioFile -lt $anioPresup ]
+		then
+        		aceptado=1
+                        logep -i "Demonep" "Archivo rechazado, motivo: fecha $fechaFile incorrecta"
+		else if [ $mesFile -lt $mesPresup -a $anioFile -eq $anioPresup ]
+        		then
+                		aceptado=1
+                        	logep -i "Demonep" "Archivo rechazado, motivo: fecha $fechaFile incorrecta"
+                	else if [ $diaFile -lt $diaPresup -a $mesFile -eq $mesPresup -a $anioFile -eq $anioPresup ]
+                        	then
+                                	aceptado=1
+                        		logep -i "Demonep" "Archivo rechazado, motivo: fecha $fechaFile incorrecta"
+                        	fi
+        		fi
+		fi
+		fi
+		
+		if [ $aceptado -eq 0 ]
+		then
+			logep -i "Demonep" "Archivo aceptado"
+			#INVOCAR A MOVEP Y MOVERLO A DIROK
+			movep "$GRUPO03/$DIRREC/$file" "$GRUPO03/$DIROK"
+		else
+			movep "$GRUPO03/$DIRREC/$file" "$GRUPO03/$DIRNOK" #INVOCAR A MOVEP Y MOVERLO A DIRNOK
+		fi
+	done
+	
+	#Verifico si hay archivos en Dirok. Si hay archivos y no arranco el procep, lo ejecuto.
+	cd $GRUPO03/$DIROK #VERIFICAR ESTO PARA LA ENTREGA. SE DEBE EXPORTAR LA VARIABLE.
+	if [ "$(ls -l)" != 'total 0' ] #Si hay archivos en DIROK
+	then
+	#chequear si arranco el procep o no
+		arrancoProcep=$(ps | grep "$procepPID" -c) #DEVUELVE 0 SI NO ARRANCO PROCEP, 1 SI ARRANCO.
+		if [ $arrancoProcep -eq 0 ]
+		then	
+			#iniciar procep
+			procep
+			procepPID=$! #obtengo el PID del procep recien ejecutado
+			logep -l "Demonep" "Procep corriendo bajo el no.: $procepPID"
+		else
+			logep -i "Demonep" "Invocacion de Procep pospuesta para el siguiente ciclo"	
+		fi
+	fi
+
+	cd ..
+	#Duerme por 30 segundos
+	sleep 30
 done
