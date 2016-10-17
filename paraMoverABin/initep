@@ -26,6 +26,17 @@ fijar_permisos () {
 	return 0
 }
 
+#busco archivo configuracion, se que el directorio dirconf esta dentro de un directorio ancestro mio (recordar el usario puede meter a bin dentro de otro #directorio). Voy a mover hacia arriba por el arbol de directorios hasta encontrarlo
+directorio_act="`pwd`"
+while ! [ -a dirconf ]
+do
+	cd ..
+done
+
+configuracion="`pwd`/dirconf/instalep.conf"
+
+
+cd "$directorio_act"
 
 #me fijo si el ambiente ya fue inicalizado, para eso, uso la variable SETEPLAM como flag
 if [ "$SETEPLAM" == SET ]
@@ -37,7 +48,7 @@ then
 #Verifico permiso de los archivos configuracion y de los binarios
 #Termina la ejecucion de initep sino puede cambiar el permiso correspondiente
 
-elif fijar_permisos r "$1" && fijar_permisos "r x" logep demonep
+elif fijar_permisos r "$configuracion" && fijar_permisos "r x" logep demonep
 then
 	#Inicializo variables de directorio
 	while read -r linea
@@ -71,18 +82,18 @@ then
 				export DIRPROC=$ruta 
 				;;
 		esac
-	done <"$1"
+	done <"$configuracion"
 	
 	#permisos de archivos maestros (los agrego aca porque necesito la ruta que se carga en DIRMAE)
 	#supongo que todos los archivos maestros finalizan en .csv
 	directorio_actual="$PWD"
-	cd "$DIRMAE"
+	cd "$GRUPO/$DIRMAE"
 
 	if fijar_permisos r *.csv
 	then
 
 		#en la variable de ambiente path agrego el directorio de ejecutables
-		PATH=$PATH:"$DIRBIN"
+		PATH=$PATH:"$GRUPO/$DIRBIN"
 
 		#las variables se han inicalizado y los permisos de los arhcivos han sido fijados
 		mensaje="Estado del Sistema: INICIALIZADO"
