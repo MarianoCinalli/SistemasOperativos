@@ -141,7 +141,7 @@ function is_CODE_CEN_valid(){
 			VALID=0 #TRUE
 		fi
 	
-	done < $DIRMAE/centros.csv
+	done < $GRUPO/$DIRMAE/centros.csv
 
 	return $VALID
 
@@ -162,7 +162,7 @@ function is_activity_valid(){
 			VALID=0 #TRUE
 		fi
 	
-	done < $DIRMAE/actividades.csv
+	done < $GRUPO/$DIRMAE/actividades.csv
 
 	return $VALID
 
@@ -186,7 +186,7 @@ function is_trimester_valid(){
 			VALID=0 #TRUE
 		fi
 	
-	done < $DIRMAE/trimestres.csv
+	done < $GRUPO/$DIRMAE/trimestres.csv
 	
 	return $VALID
 
@@ -215,7 +215,7 @@ function is_date_valid(){
 			fi
 		fi
 	
-	done < $DIRMAE/trimestres.csv
+	done < $GRUPO/$DIRMAE/trimestres.csv
 
 	return $VALID
 
@@ -310,8 +310,8 @@ function process_file_register_by_register(){
 		if ((lines_processed = 0))
 		then
 			
-			echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE" >> $DIRPROC/ejecutado-$year_of_file
-			echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE" >> $DIRPROC/rechazado-$year_of_file
+			echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE" >> $GRUPO/$DIRPROC/ejecutado-$year_of_file
+			echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE" >> $GRUPO/$DIRPROC/rechazado-$year_of_file
 
 		fi
 
@@ -373,10 +373,13 @@ function process_file_register_by_register(){
 # Body -------------------------------------------------------------------------------------
 
 # 1ro ¿Sistema inicializado?
+
 if is_system_initialized
 then
 	printf "El sistema no fue inicializado.\nCorra initep.\nEjecucion terminada.\n"
 else
+	# Creo la carpeta para los archivos procesados
+	mkdir $GRUPO/$DIRPROC/proc
 	# 2do informar cantidad de archivos a procesar
 	CANTIDADARCHIVOS=$(ls -1 | wc -l)
 	echo "$CANTIDADARCHIVOS"
