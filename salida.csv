@@ -1,0 +1,8 @@
+Fecha;Centro;Nom Cen;cod Act;Actividad;Trimeste;Gasto;provincia;control
+20151220;0.0.0.1-1-1;SubSubsecretaria de Administracion General;m.c.c1;Desarrollo de Procesos;Primer Trimestre 2016;24,40;CABA;gasto fuera de la planificacion
+20151222;0.0.0.1-2-1.1;Direccion General Baires;m.c.c1;Desarrollo de Procesos;Primer Trimestre 2016;92,50;CABA;gasto fuera de la planificacion
+20151220;0.0.0.1-2-1.1;Direccion General Baires;p.t.f1;Fiscalizacion CABA;Primer Trimestre 2016;101,75;CABA;gasto fuera de la planificacion
+20151221;0.0.0.1-2;Secretaria de Trabajo;m.f.m1;Desarrollo de Aplicativos;Primer Trimestre 2016;138,75;CABA;gasto fuera de la planificacion
+20151221;0.0.0.1-2-1.1;Direccion General Baires;m.c.c1;Desarrollo de Procesos;Primer Trimestre 2016;157,50;CABA;gasto fuera de la planificacion
+20151221;0.0.0.1-2-1.1;Direccion General Baires;p.t.f1;Fiscalizacion CABA;Primer Trimestre 2016;173,25;CABA;gasto fuera de la planificacion
+-;-;-;-;-;Total Gastos CABA;"688,15"

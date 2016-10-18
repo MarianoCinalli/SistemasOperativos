@@ -95,7 +95,8 @@ sub getFiltro{
 
 sub getPresupuestoTrimestres{
 	my %presupuesto_trimestres=($trimestres[0], {}, $trimestres[1], {}, $trimestre[2], {}, $trimestre[3], {});
-	open (my $archivo, '<', $path_sancionado.$_[0].".csv") or die("fallo al abrir archivo sancionado-".$_[0]."csv");
+	my $archivo_ruta=$path_sancionado.$_[0].".csv";
+	open (my $archivo, '<', $archivo_ruta) or die("fallo al abrir archivo ".$archivo_ruta);
 	my $linea=<$archivo>;
 	while ($linea=<$archivo>){
 		chop($linea);
@@ -122,7 +123,8 @@ sub getArchivoSalida{
 }
 
 sub getInicioTrimestres{
-	open(my $trimestres, '<', $path_maestros."/trimestres.csv") or die("fallo al abrir trimestres.csv");
+	my $archivo_ruta=$path_maestros."/trimestres.csv";
+	open(my $trimestres, '<', $archivo_ruta) or die("fallo al abrir archivo ".$archivo_ruta);
 	my $linea=undef;
 	my %inicio_trimestres;
 	$linea=<$trimestres>;
@@ -151,7 +153,8 @@ sub getInicioTrimestres{
 
 sub getGastosPlanificados{
 	my %gastos_planificados;
-	open(my $planes, '<', $path_maestros."/tabla-AxC.csv") or die("fallo al abrir tabla-AxC.csv");
+	my $archivo_ruta=$path_maestros."/tabla-AxC.csv";
+	open(my $planes, '<', $archivo_ruta) or die("fallo al abrir archivo ".$archivo_ruta);
 	my $linea;
 	$linea=<$planes>;
 	while ($linea=<$planes>){
@@ -167,7 +170,8 @@ sub getGastosPlanificados{
 
 sub getNumActividades{
 	my %num_actividades;
-	open(my $nombres, '<', $path_maestros."/actividades.csv") or die("fallo al abrir actividades.csv");
+	my $archivo_ruta=$path_maestros."/actividades.csv";
+	open(my $nombres, '<', $archivo_ruta) or die("fallo al abrir archivo ".$archivo_ruta);
 	my $linea;
 	$linea=<$nombres>;
 	while ($linea=<$nombres>){
@@ -180,7 +184,8 @@ sub getNumActividades{
 
 sub getNombres{
 	my %nombres;
-	open ($fnombres, '<', $path_maestros."/".$_[0]) or die("fallo a abrir ".$path_maestros."/".$_[0]);
+	my $archivo_ruta=$path_maestros."/".$_[0];
+	open ($fnombres, '<', $archivo_ruta) or die("fallo a abrir ".$archivo_ruta);
 	my $linea;
 	$linea=<$fnombres>;
 	while ($linea=<$fnombres>){
@@ -380,15 +385,11 @@ sub ordenarPorTrimestreCentro{
 
 #empieza Script--------------------------------------------------
 
-#variable harcadodeada a borrar
-#ruta a directorio de ejecutados
-$path_ejecutados="/home/pepe/Escritorio/gaspar/cosas/gaspar/contenido_pendrive/programacion/sistemas_operativos/tp/SistemasOperativos/imp";
-#ruta a directorios de maestros
-$path_maestros="/home/pepe/Escritorio/gaspar/cosas/gaspar/contenido_pendrive/programacion/sistemas_operativos/tp/SistemasOperativos/mae";
-#ruta a archivo sancionados, el anio se lo agrego despues, cuando me lo pase el usario, creo que es la misma ruta que los ejecutados
-$path_sancionado=$path_ejecutados."/sancionado-";
-#ejecutado anio_fiscal, el path al arcivo  de salida del procep, el anio se lo agrego despues
-$path_ejecutado_anio_fiscal="/home/pepe/Escritorio/gaspar/cosas/gaspar/contenido_pendrive/programacion/sistemas_operativos/tp/SistemasOperativos/imp/proc/ejecutado_";
+$path_grupo=$ENV{GRUPO};
+$path_maestros=$path_grupo.$ENV{DIRMAE}
+$path_ejecutado_anio_fiscal=$path_grupo.$ENV{DIRPROC}."proc/ejecutado-";
+$path_ejecutados=$path_grupo.$ENV{DIROK};
+$path_sancionado=$path_maestros."/sancionado-";
 
 printf "Elija el listado que desee generar: \n";
 printf "1- Listado de presupuesto sancionado \n";
@@ -492,7 +493,8 @@ if ($opcion==2){
 		}
 	}
 	%gastos_planificados=getGastosPlanificados();
-	open(my $archivo, '<', $path_ejecutado_anio_fiscal.$anio.".csv") or die("fallo al abrir archivo ejecutado_".$anio.".csv");
+	my $archivo_ruta=$path_ejecutado_anio_fiscal.$anio;
+	open(my $archivo, '<', $archivo_ruta) or die("fallo al abrir archivo".$archivo_ruta);
 	my $ruta=getArchivoSalida();
 	my $out=undef;
 	if ($ruta){

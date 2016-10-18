@@ -1,4 +1,0 @@
-Id;Fecha;Centro Presupuestario;Actividad; Trimestre;Gasto;Archivo Origen;COD_ACT;NOM_PROV;NOM_CEN
-id1;20160123;0.0.0.1;nom_act;Primer Trimetres 2016;100;archivo;Cod_act;Santa Cruz;CentroNombre
-id1;20160123;0.0.0.1;nom_act;Primer Trimetres 2016;"43,21";archivo;Cod_act;Santa Cruz;CentroNombre
-id1;20160123;0.0.0.1;nom_act;Primer Trimetres 2016;"50";archivo;Cod_act;Buenos Aires;CentroNombre
