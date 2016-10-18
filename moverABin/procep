@@ -63,7 +63,7 @@ function is_file_valid(){
 	if [ "$format_reg_field_quantity" -eq "$first_reg_field_quantity" ]; then is_valid=0 ;fi
 
 	return $is_valid
-	return 0 #TRUE
+	#return 0 #TRUE
 
 }
 
@@ -338,13 +338,13 @@ function process_file_register_by_register(){
 						logep -i "procep" "El registro, $line, tiene fecha invalida"
 					fi
 				else
-					logep "procep" "El registro, $line, tiene trimestre invalido"
+					logep -i "procep" "El registro, $line, tiene trimestre invalido"
 				fi
 
-				logep "procep" "El registro, $line, tiene actividad invalida"
+				logep -i "procep" "El registro, $line, tiene actividad invalida"
 			fi
 		else
-			logep "procep" "El registro, $line, tiene codigo de central invalido"
+			logep -i "procep" "El registro, $line, tiene codigo de central invalido"
 		fi
 		
 		if [ $is_register_valid -eq "0" ]
@@ -365,8 +365,8 @@ function process_file_register_by_register(){
 	done < $1
 
 	# Grabar log registros validos e invalidos.
-	logep "procep" "Se procesaron $valid_registers registros validos."
-	logep "procep" "Se procesaron $valid_registers registros invalidos."
+	logep -i "procep" "Se procesaron $valid_registers registros validos."
+	logep -i "procep" "Se procesaron $valid_registers registros invalidos."
 		
 	# Mover archivo procesado.
 	movep "$GRUPO/$DIRMAE/$1" "$GRUPO/$DIRPROC/ejecutado/$filename"	
