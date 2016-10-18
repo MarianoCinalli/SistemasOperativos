@@ -223,7 +223,7 @@ function is_expenditure_valid(){
 	#TESTEADO
 	VALID=1 #FALSE
 	
-	if (("$1">"0"))
+	if [ "$1" -gt "0" ]
 	then
 
 		VALID=0 #TRUE
@@ -277,6 +277,7 @@ function process_file_register_by_register(){
 	# Creo contadores de registros, validos e invalidos, y un booleano (0 exito - 1 fallo).
 	valid_registers=0
 	invalid_registers=0
+	lines_processed=0
 	is_register_valid=1 #FALSE
 
 	# Obtengo el nombre del archivo con la extencion.
@@ -295,7 +296,6 @@ function process_file_register_by_register(){
 
 	while read -r line
 	do
-		((lines_processed++))
 		
 		# Separo los componentes del registro
 		IFS=';'
@@ -303,7 +303,7 @@ function process_file_register_by_register(){
 
 		# El primer registro contiene la estructura.
 		# Lo mando tal cual a los archivos de validos e invalidos.
-		if ((lines_processed = 0))
+		if [ "$lines_processed" -eq "0" ]
 		then
 			
 			echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE" >> $GRUPO/$DIRPROC/ejecutado-$year_of_file
@@ -347,7 +347,7 @@ function process_file_register_by_register(){
 			logep "procep" "El registro, $line, tiene codigo de central invalido"
 		fi
 		
-		if $is_register_valid
+		if [ $is_register_valid -eq "0" ]
 		then
 			# 6to grabar registro valido. Aumentar contador
 			
@@ -359,15 +359,17 @@ function process_file_register_by_register(){
 			echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE" >> $GRUPO/$DIRPROC/rechazado-$year_of_file
 			((invalid_registers++))
 		fi
-		
-		# Grabar log registros validos e invalidos.
-		logep "procep" "Se procesaron $valid_registers registros validos."
-		logep "procep" "Se procesaron $valid_registers registros invalidos."
-		
-		# Mover archivo procesado.
-		movep "$GRUPO/$DIRMAE/$1" "$GRUPO/$DIRPROC/ejecutado/$filename"
+
+		((lines_processed++))
 
 	done < $1
+
+	# Grabar log registros validos e invalidos.
+	logep "procep" "Se procesaron $valid_registers registros validos."
+	logep "procep" "Se procesaron $valid_registers registros invalidos."
+		
+	# Mover archivo procesado.
+	movep "$GRUPO/$DIRMAE/$1" "$GRUPO/$DIRPROC/ejecutado/$filename"	
 
 }
 
@@ -379,7 +381,7 @@ if is_system_initialized
 then
 	# 2do informar cantidad de archivos a procesar
 	CANTIDADARCHIVOS=$(ls -1 | wc -l)
-	echo "$CANTIDADARCHIVOS"
+	echo "Se van a procesar $CANTIDADARCHIVOS archivos."
 	logep -i "procep" "Cantidad de archivos a procesar: $CANTIDADARCHIVOS" 
 	# 3ro procesar archivos
 	process_files_in_folder
