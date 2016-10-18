@@ -94,7 +94,6 @@ then
 
 	if fijar_permisos r *.csv
 	then
-
 		#en la variable de ambiente path agrego el directorio de ejecutables
 		PATH=$PATH:"$GRUPO/$DIRBIN"
 
@@ -114,7 +113,7 @@ then
 			s|S ) 
 				printf "%s\n" "$instrucciones_desactivar_demonio"
 				logep -i "initep" "¿Desea efectuar la activación de Demonep (S/N)? Si"
-				./demonep &
+				demonep &
 				pid=$!			
 				printf "%s\n" "Demonep corriendo bajo el numero: $pid" 
 				logep -i "initep" "Demonep corriendo bajo el numero: $pid"
@@ -143,4 +142,3 @@ then
 fi
 
 cd "$directorio_actual"
-

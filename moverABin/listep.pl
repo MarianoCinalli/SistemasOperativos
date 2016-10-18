@@ -199,7 +199,8 @@ sub getNombres{
 
 sub CargarRegistros{
 	my @regitros;
-	foreach my $ruta (<$path_ejecutados/ejecutado_$_[0]*>){
+	my $rutas_archivos=$path_ejecutados.$_[0];
+	foreach my $ruta (<$rutas_archivos*>){
 		open(my $archivo, '<', $ruta) or die ("fallo al abrir ".$ruta);
 		my $linea;
 		$linea=<$archivo>;
@@ -259,7 +260,7 @@ sub calcularYMostrarSaldos(){
 	}
 	$encabezado="ID;FECHA MOV;CENTRO;ACTIVIDAD;TRIMESTRE;IMPORTE;SALDO por TRIMESTRE;CONTROL;SALDO ACUMULADO\n";
 	if ($out){
-		print $encabezado;
+		print $out $encabezado;
 	}
 	print $encabezado;
 	my $centro="";
@@ -388,7 +389,7 @@ sub ordenarPorTrimestreCentro{
 $path_grupo=$ENV{GRUPO};
 $path_maestros=$path_grupo."/".$ENV{DIRMAE};
 $path_ejecutado_anio_fiscal=$path_grupo."/".$ENV{DIRPROC}."/proc/ejecutado-";
-$path_ejecutados=$path_grupo."/".$ENV{DIROK};
+$path_ejecutados=$path_grupo."/".$ENV{DIROK}."/ejecutado_";
 $path_sancionado=$path_maestros."/sancionado-";
 
 printf "Elija el listado que desee generar: \n";
