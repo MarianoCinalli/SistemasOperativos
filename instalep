@@ -263,7 +263,7 @@ done
 #Mover los archivos maestros y tablas
 echoes "Instalando Archivos Maestros y Tablas"
 DIRECTORIOMAESTROS="./moverAMaestros"
-DIRECTORIOTABLAS="./moverAProc"
+DIRECTORIOTABLAS="./moverARec"
 for file in "$DIRECTORIOMAESTROS"/*
 do
   cp $file $DIRMAE
@@ -271,7 +271,7 @@ done
 
 for file in "$DIRECTORIOTABLAS"/*
 do
-  cp $file $DIROK
+  cp $file $DIRREC
 done
 
 echoes "Borrando archivos temporales."
