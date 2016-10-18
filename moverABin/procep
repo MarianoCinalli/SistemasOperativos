@@ -241,11 +241,8 @@ function process_files_in_folder(){
 	# Itero por cada archivo dentro de la carpeta
 	for file in "$GRUPO/$DIRPROC"/*
 	do	
-		echo $file
-		if [ "$file" = "$GRUPO/$DIRPROC/proc" ]
+		if [ "$file" != "$GRUPO/$DIRPROC/proc" ]
 		then
-			echo "Direcotrio $1"
-		else
 			process_file $file
 		fi
 	done
@@ -283,7 +280,7 @@ function process_file_register_by_register(){
 	valid_registers=0
 	invalid_registers=0
 	lines_processed=0
-	is_register_valid=1 #FALSE
+	
 
 	# Obtengo el nombre del archivo con la extencion.
 	filename=$(basename "$1")
@@ -298,12 +295,15 @@ function process_file_register_by_register(){
 	# Creo el archivo de registros invalidos y validos	
 	touch $GRUPO/$DIRPROC/ejecutado-$year_of_file
 	touch $GRUPO/$DIRPROC/rechazado-$year_of_file
+	
+	# Separo los componentes del registro
+	IFS=';'
 
 	while read -r line
 	do
-		
-		# Separo los componentes del registro
-		IFS=';'
+
+		is_register_valid=1 #FALSE
+
 		read -r ID_EJE FECHA_EJE COD_CEN_EJE NOM_ACT_EJE NOM_TRI_EJE GASTO_EJE <<< "$line"
 
 		# El primer registro contiene la estructura.
@@ -314,55 +314,58 @@ function process_file_register_by_register(){
 			echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE" >> $GRUPO/$DIRPROC/ejecutado-$year_of_file
 			echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE" >> $GRUPO/$DIRPROC/rechazado-$year_of_file
 
-		fi
+		else
 
-		# 5to validar registro.
-		# Componente a componente. 
-		# Esta asi para poder distinguir los errores en el log.
-		# Aclaracion para las funciones: Todas las variables con espacios se mandan como "$variable".
-		if is_CODE_CEN_valid $COD_CEN_EJE
-		then
-			if is_activity_valid "$NOM_ACT_EJE"
+			# 5to validar registro.
+			# Componente a componente. 
+			# Esta asi para poder distinguir los errores en el log.
+			# Aclaracion para las funciones: Todas las variables con espacios se mandan como "$variable".
+			if is_CODE_CEN_valid $COD_CEN_EJE
 			then
-				if is_trimester_valid "$NOM_TRI_EJE"
+				if is_activity_valid "$NOM_ACT_EJE"
 				then
-					# Del registro la fecha viene como aaaammdd.
-					# La formateo como dd/mm/aaaa
-					date_separator "$FECHA_EJE"
-					date_of_register=$returned_separated_date
-
-					if is_date_valid $date_of_register $date_of_file "$NOM_TRI_EJE";
+					if is_trimester_valid "$NOM_TRI_EJE"
 					then
-						if is_expenditure_valid $GASTO_EJE
+						# Del registro la fecha viene como aaaammdd.
+						# La formateo como dd/mm/aaaa
+						date_separator "$FECHA_EJE"
+						date_of_register=$returned_separated_date
+
+						if is_date_valid $date_of_register $date_of_file "$NOM_TRI_EJE";
 						then
-							is_register_valid=0 #TRUE
+							if is_expenditure_valid $GASTO_EJE
+							then
+								is_register_valid=0 #TRUE
+							else
+								logep -i "procep" "El registro, $line, tiene gastos invalidos"
+							fi
 						else
-							logep -i "procep" "El registro, $line, tiene gastos invalidos"
+							logep -i "procep" "El registro, $line, tiene fecha invalida"
 						fi
 					else
-						logep -i "procep" "El registro, $line, tiene fecha invalida"
+						logep -i "procep" "El registro, $line, tiene trimestre invalido"
 					fi
-				else
-					logep -i "procep" "El registro, $line, tiene trimestre invalido"
-				fi
 
-				logep -i "procep" "El registro, $line, tiene actividad invalida"
+					logep -i "procep" "El registro, $line, tiene actividad invalida"
+				fi
+			else
+				logep -i "procep" "El registro, $line, tiene codigo de central invalido"
 			fi
-		else
-			logep -i "procep" "El registro, $line, tiene codigo de central invalido"
-		fi
+
 		
-		if [ $is_register_valid -eq "0" ]
-		then
-			# 6to grabar registro valido. Aumentar contador
+		
+			if [ $is_register_valid -eq "0" ]
+			then
+				# 6to grabar registro valido. Aumentar contador
 			
-			echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE" >> $GRUPO/$DIRPROC/ejecutado-$year_of_file
-			((valid_registers++))
-		else
-			# 7mo grabar registro invalido. Aumentar contador
+				echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE" >> $GRUPO/$DIRPROC/ejecutado-$year_of_file
+				((valid_registers++))
+			else
+				# 7mo grabar registro invalido. Aumentar contador
 			
-			echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE" >> $GRUPO/$DIRPROC/rechazado-$year_of_file
-			((invalid_registers++))
+				echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE" >> $GRUPO/$DIRPROC/rechazado-$year_of_file
+				((invalid_registers++))
+			fi
 		fi
 
 		((lines_processed++))
