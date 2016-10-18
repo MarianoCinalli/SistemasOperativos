@@ -27,10 +27,11 @@ function is_system_initialized(){
 function is_file_unique(){
 
 	# TESTEADO
+	filename=$(basename "$1")
 
 	is_unique=1 # FALSE
 
-	if [ ! -f $GRUPO/$DIRPROC/proc/$1 ]; then
+	if [ ! -f $GRUPO/$DIRPROC/proc/$filename ]; then
 
     		is_unique=0 # TRUE
 	fi
@@ -63,7 +64,7 @@ function is_file_valid(){
 	if [ "$format_reg_field_quantity" -eq "$first_reg_field_quantity" ]; then is_valid=0 ;fi
 
 	return $is_valid
-	return 0 #TRUE
+	#return 0 #TRUE
 
 }
 
@@ -177,7 +178,7 @@ function is_trimester_valid(){
 		IFS=';'
 		
 		read -r ANO_TRI NOM_TRI FDESDE_TRI FHASTA_TRI <<< "$line"
-		if [ "$1" = "$NOM_TRI" -a "$CURRENTYEAR" = "$ANO_TRI"]
+		if [ "$1" = "$NOM_TRI" -a "$CURRENT_YEAR" = "$ANO_TRI" ]
 		then 
 			VALID=0 #TRUE
 		fi
@@ -239,10 +240,11 @@ function is_expenditure_valid(){
 function process_files_in_folder(){
 
 	# Itero por cada archivo dentro de la carpeta
-	for file in "$folder"/*
+	for file in "$GRUPO/$DIROK"/*
 	do	
-		# 4to valido la unicidad del archivo a procesar.
+
 		process_file $file
+
 	done
 
 }
@@ -260,11 +262,11 @@ function process_file(){
 			process_file_register_by_register $1
 
 		else
-			movep "$GRUPO/$DIRMAE/$1" "$GRUPO/$DIRNOK/" "procep"
+			movep "$1" "$GRUPO/$DIRNOK/" "procep"
 			logep -i "procep" "Estructura inesperada. Se rechaza el archivo $1"
 		fi
 	else
-		movep "$GRUPO/$DIRMAE/$1" "$GRUPO/$DIRNOK/" "procep"
+		movep "$1" "$GRUPO/$DIRNOK/" "procep"
 		logep -i "procep" "Archivo Duplicado. Se rechaza el archivo $1"
 	fi
 
@@ -277,7 +279,8 @@ function process_file_register_by_register(){
 	# Creo contadores de registros, validos e invalidos, y un booleano (0 exito - 1 fallo).
 	valid_registers=0
 	invalid_registers=0
-	is_register_valid=1 #FALSE
+	lines_processed=0
+	
 
 	# Obtengo el nombre del archivo con la extencion.
 	filename=$(basename "$1")
@@ -292,82 +295,89 @@ function process_file_register_by_register(){
 	# Creo el archivo de registros invalidos y validos	
 	touch $GRUPO/$DIRPROC/ejecutado-$year_of_file
 	touch $GRUPO/$DIRPROC/rechazado-$year_of_file
+	
+	# Separo los componentes del registro
+	IFS=';'
 
 	while read -r line
 	do
-		((lines_processed++))
-		
-		# Separo los componentes del registro
-		IFS=';'
+
+		is_register_valid=1 #FALSE
+
 		read -r ID_EJE FECHA_EJE COD_CEN_EJE NOM_ACT_EJE NOM_TRI_EJE GASTO_EJE <<< "$line"
 
 		# El primer registro contiene la estructura.
 		# Lo mando tal cual a los archivos de validos e invalidos.
-		if ((lines_processed = 0))
+		if [ "$lines_processed" -eq "0" ]
 		then
 			
 			echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE" >> $GRUPO/$DIRPROC/ejecutado-$year_of_file
 			echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE" >> $GRUPO/$DIRPROC/rechazado-$year_of_file
 
-		fi
+		else
 
-		# 5to validar registro.
-		# Componente a componente. 
-		# Esta asi para poder distinguir los errores en el log.
-		# Aclaracion para las funciones: Todas las variables con espacios se mandan como "$variable".
-		if is_CODE_CEN_valid $COD_CEN_EJE
-		then
-			if is_activity_valid "$NOM_ACT_EJE"
+			# 5to validar registro.
+			# Componente a componente. 
+			# Esta asi para poder distinguir los errores en el log.
+			# Aclaracion para las funciones: Todas las variables con espacios se mandan como "$variable".
+			if is_CODE_CEN_valid $COD_CEN_EJE
 			then
-				if is_trimester_valid "$NOM_TRI_EJE"
+				if is_activity_valid "$NOM_ACT_EJE"
 				then
-					# Del registro la fecha viene como aaaammdd.
-					# La formateo como dd/mm/aaaa
-					date_separator "$FECHA_EJE"
-					date_of_register=$returned_separated_date
-
-					if is_date_valid $date_of_register $date_of_file "$NOM_TRI_EJE";
+					if is_trimester_valid "$NOM_TRI_EJE"
 					then
-						if is_expenditure_valid $GASTO_EJE
+						# Del registro la fecha viene como aaaammdd.
+						# La formateo como dd/mm/aaaa
+						date_separator "$FECHA_EJE"
+						date_of_register=$returned_separated_date
+
+						if is_date_valid $date_of_register $date_of_file "$NOM_TRI_EJE";
 						then
-							is_register_valid=0 #TRUE
+							if is_expenditure_valid $GASTO_EJE
+							then
+								is_register_valid=0 #TRUE
+							else
+								logep -i "procep" "El registro, $line, tiene gastos invalidos"
+							fi
 						else
-							logep -i "procep" "El registro, $line, tiene gastos invalidos"
+							logep -i "procep" "El registro, $line, tiene fecha invalida"
 						fi
 					else
-						logep -i "procep" "El registro, $line, tiene fecha invalida"
+						logep -i "procep" "El registro, $line, tiene trimestre invalido"
 					fi
-				else
-					logep "procep" "El registro, $line, tiene trimestre invalido"
-				fi
 
-				logep "procep" "El registro, $line, tiene actividad invalida"
+					logep -i "procep" "El registro, $line, tiene actividad invalida"
+				fi
+			else
+				logep -i "procep" "El registro, $line, tiene codigo de central invalido"
 			fi
-		else
-			logep "procep" "El registro, $line, tiene codigo de central invalido"
-		fi
+
 		
-		if $is_register_valid
-		then
-			# 6to grabar registro valido. Aumentar contador
+		
+			if [ $is_register_valid -eq "0" ]
+			then
+				# 6to grabar registro valido. Aumentar contador
 			
-			echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE" >> $GRUPO/$DIRPROC/ejecutado-$year_of_file
-			((valid_registers++))
-		else
-			# 7mo grabar registro invalido. Aumentar contador
+				echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE" >> $GRUPO/$DIRPROC/ejecutado-$year_of_file
+				((valid_registers++))
+			else
+				# 7mo grabar registro invalido. Aumentar contador
 			
-			echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE" >> $GRUPO/$DIRPROC/rechazado-$year_of_file
-			((invalid_registers++))
+				echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE" >> $GRUPO/$DIRPROC/rechazado-$year_of_file
+				((invalid_registers++))
+			fi
 		fi
-		
-		# Grabar log registros validos e invalidos.
-		logep "procep" "Se procesaron $valid_registers registros validos."
-		logep "procep" "Se procesaron $valid_registers registros invalidos."
-		
-		# Mover archivo procesado.
-		movep "$GRUPO/$DIRMAE/$1" "$GRUPO/$DIRPROC/ejecutado/$filename"
+
+		((lines_processed++))
 
 	done < $1
+
+	# Grabar log registros validos e invalidos.
+	logep -i "procep" "Se procesaron $valid_registers registros validos."
+	logep -i "procep" "Se procesaron $valid_registers registros invalidos."
+		
+	# Mover archivo procesado.
+	movep "$1" "$GRUPO/$DIRPROC/proc"
 
 }
 
@@ -377,12 +387,12 @@ function process_file_register_by_register(){
 
 if is_system_initialized
 then
-	printf "El sistema no fue inicializado.\nCorra initep.\nEjecucion terminada.\n"
-else
 	# 2do informar cantidad de archivos a procesar
 	CANTIDADARCHIVOS=$(ls -1 | wc -l)
-	echo "$CANTIDADARCHIVOS"
+	echo "Se van a procesar $CANTIDADARCHIVOS archivos."
 	logep -i "procep" "Cantidad de archivos a procesar: $CANTIDADARCHIVOS" 
 	# 3ro procesar archivos
 	process_files_in_folder
+else
+	printf "El sistema no fue inicializado.\nCorra initep.\nEjecucion terminada.\n"
 fi
