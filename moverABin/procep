@@ -27,10 +27,11 @@ function is_system_initialized(){
 function is_file_unique(){
 
 	# TESTEADO
+	filename=$(basename "$1")
 
 	is_unique=1 # FALSE
 
-	if [ ! -f $GRUPO/$DIRPROC/proc/$1 ]; then
+	if [ ! -f $GRUPO/$DIRPROC/proc/$filename ]; then
 
     		is_unique=0 # TRUE
 	fi
@@ -239,12 +240,11 @@ function is_expenditure_valid(){
 function process_files_in_folder(){
 
 	# Itero por cada archivo dentro de la carpeta
-	for file in "$GRUPO/$DIRPROC"/*
+	for file in "$GRUPO/$DIROK"/*
 	do	
-		if [ "$file" != "$GRUPO/$DIRPROC/proc" ]
-		then
-			process_file $file
-		fi
+
+		process_file $file
+
 	done
 
 }
@@ -262,11 +262,11 @@ function process_file(){
 			process_file_register_by_register $1
 
 		else
-			movep "$GRUPO/$DIRMAE/$1" "$GRUPO/$DIRNOK/" "procep"
+			movep "$1" "$GRUPO/$DIRNOK/" "procep"
 			logep -i "procep" "Estructura inesperada. Se rechaza el archivo $1"
 		fi
 	else
-		movep "$GRUPO/$DIRMAE/$1" "$GRUPO/$DIRNOK/" "procep"
+		movep "$1" "$GRUPO/$DIRNOK/" "procep"
 		logep -i "procep" "Archivo Duplicado. Se rechaza el archivo $1"
 	fi
 
@@ -377,9 +377,7 @@ function process_file_register_by_register(){
 	logep -i "procep" "Se procesaron $valid_registers registros invalidos."
 		
 	# Mover archivo procesado.
-	movep "$1" "$GRUPO/$DIRPROC/proc"	
-	movep "$GRUPO/$DIRPROC/ejecutado-$year_of_file" "$GRUPO/$DIROK"
-	movep "$GRUPO/$DIRPROC/rechazado-$year_of_file" "$GRUPO/$DIRNOK"
+	movep "$1" "$GRUPO/$DIRPROC/proc"
 
 }
 

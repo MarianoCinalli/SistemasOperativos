@@ -271,7 +271,7 @@ done
 
 for file in "$DIRECTORIOTABLAS"/*
 do
-  cp $file $DIRPROC
+  cp $file $DIROK
 done
 
 echoes "Borrando archivos temporales."
