@@ -254,7 +254,7 @@ mkdir -p $DIRNOK
 
 #Mover programas y funciones
 echoes "Instalando Programas y Funciones"
-DIRECTORIOBINARIOS="./paraMoverABin"
+DIRECTORIOBINARIOS="./moverABin"
 for file in "$DIRECTORIOBINARIOS"/*
 do
   cp $file $DIRBIN
@@ -262,10 +262,16 @@ done
 
 #Mover los archivos maestros y tablas
 echoes "Instalando Archivos Maestros y Tablas"
-DIRECTORIODATOS="./datos"
-for file in "$DIRECTORIODATOS"/*
+DIRECTORIOMAESTROS="./moverAMaestros"
+DIRECTORIOTABLAS="./moverAProc"
+for file in "$DIRECTORIOMAESTROS"/*
 do
   cp $file $DIRMAE
+done
+
+for file in "$DIRECTORIOTABLAS"/*
+do
+  cp $file $DIRPROC
 done
 
 # Grabo en el archivo instalep.conf en /dirconf un registro por cada variable

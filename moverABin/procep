@@ -374,8 +374,6 @@ if is_system_initialized
 then
 	printf "El sistema no fue inicializado.\nCorra initep.\nEjecucion terminada.\n"
 else
-	# Creo la carpeta para los archivos procesados
-	mkdir $GRUPO/$DIRPROC/proc
 	# 2do informar cantidad de archivos a procesar
 	CANTIDADARCHIVOS=$(ls -1 | wc -l)
 	echo "$CANTIDADARCHIVOS"
