@@ -377,12 +377,12 @@ function process_file_register_by_register(){
 
 if is_system_initialized
 then
-	printf "El sistema no fue inicializado.\nCorra initep.\nEjecucion terminada.\n"
-else
 	# 2do informar cantidad de archivos a procesar
 	CANTIDADARCHIVOS=$(ls -1 | wc -l)
 	echo "$CANTIDADARCHIVOS"
 	logep -i "procep" "Cantidad de archivos a procesar: $CANTIDADARCHIVOS" 
 	# 3ro procesar archivos
 	process_files_in_folder
+else
+	printf "El sistema no fue inicializado.\nCorra initep.\nEjecucion terminada.\n"
 fi
