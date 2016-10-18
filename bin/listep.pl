@@ -386,9 +386,9 @@ sub ordenarPorTrimestreCentro{
 #empieza Script--------------------------------------------------
 
 $path_grupo=$ENV{GRUPO};
-$path_maestros=$path_grupo.$ENV{DIRMAE}
-$path_ejecutado_anio_fiscal=$path_grupo.$ENV{DIRPROC}."proc/ejecutado-";
-$path_ejecutados=$path_grupo.$ENV{DIROK};
+$path_maestros=$path_grupo."/".$ENV{DIRMAE};
+$path_ejecutado_anio_fiscal=$path_grupo."/".$ENV{DIRPROC}."/proc/ejecutado-";
+$path_ejecutados=$path_grupo."/".$ENV{DIROK};
 $path_sancionado=$path_maestros."/sancionado-";
 
 printf "Elija el listado que desee generar: \n";
