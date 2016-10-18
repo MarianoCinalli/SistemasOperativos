@@ -238,11 +238,8 @@ function is_expenditure_valid(){
 
 # Guarda los registros validos en el formato deseado.
 # $1 es la linea completa a guardar. $2 el nombre del archivo sin la ruta.
-
 function save_valid_register(){
-	echo "--------------------------------------------------------------"
-	echo "UNO = $1"
-	echo "DOS = $2"
+
 	read -r ID_EJE FECHA_EJE COD_CEN_EJE NOM_ACT_EJE NOM_TRI_EJE GASTO_EJE <<< "$1"
 	
 	# Obtengo el anio del archivo. (Segundo campo luego del _)
@@ -288,9 +285,21 @@ function save_valid_register(){
 	done < $GRUPO/$DIRMAE/provincias.csv
 
 	IFS=$SAVED_IFS
-	echo "$NOM_ACT_EJE es $COD_ACT_TO_SAVE - $COD_PROV_FILE es $NOM_PROV_TO_SAVE - $COD_CEN_EJE es $NOM_CEN_TO_SAVE"
 
 	echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE;$2;$COD_ACT_TO_SAVE;$NOM_PROV_TO_SAVE;$NOM_CEN_TO_SAVE" >> $GRUPO/$DIRPROC/ejecutado-$year_of_file
+}
+
+# Guarda los registros invalidos en el formato deseado.
+# $1 es la linea completa a guardar. $2 el nombre del archivo sin la ruta. $3 el error por el cual fue rechazado.
+function save_invalid_register(){
+
+	current_date=$(date)
+
+	# Obtengo el anio del archivo. (Segundo campo luego del _)
+	year_of_file=$(echo $2 | cut -d"_" -f2)
+
+	echo "$2;$3;$1;$USER;$current_date" >> $GRUPO/$DIRPROC/rechazado-$year_of_file
+
 }
 
 # Funciones procesadoras --------------------------------------------------------------
@@ -340,7 +349,6 @@ function process_file_register_by_register(){
 	invalid_registers=0
 	lines_processed=0
 	
-
 	# Obtengo el nombre del archivo con la extencion.
 	filename=$(basename "$1")
 
@@ -360,6 +368,7 @@ function process_file_register_by_register(){
 
 	while read -r line1
 	do
+		error=" " 
 
 		is_register_valid=1 #FALSE
 
@@ -392,18 +401,23 @@ function process_file_register_by_register(){
 								is_register_valid=0 #TRUE
 							else
 								logep -i "procep" "El registro, $line1, tiene gastos invalidos"
+								error="Gastos invalidos"
 							fi
 						else
 							logep -i "procep" "El registro, $line1, tiene fecha invalida"
+							error="Fecha invalida"
 						fi
 					else
 						logep -i "procep" "El registro, $line1, tiene trimestre invalido"
+						error="Trimestre invalido"
 					fi
 
 					logep -i "procep" "El registro, $line1, tiene actividad invalida"
+					error="Actividad invalido"
 				fi
 			else
 				logep -i "procep" "El registro, $line1, tiene codigo de central invalido"
+				error="Codigo de central invalido"
 			fi
 
 		
@@ -411,14 +425,14 @@ function process_file_register_by_register(){
 			if [ $is_register_valid -eq "0" ]
 			then
 				# 6to grabar registro valido. Aumentar contador
-				echo $filename
 				save_valid_register "$line1" "$filename"
 
 				((valid_registers++))
 			else
 				# 7mo grabar registro invalido. Aumentar contador
 			
-				echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE" >> $GRUPO/$DIRPROC/rechazado-$year_of_file
+				save_invalid_register "$line1" "$filename" "$error"
+
 				((invalid_registers++))
 			fi
 		fi
@@ -429,7 +443,7 @@ function process_file_register_by_register(){
 
 	# Grabar log registros validos e invalidos.
 	logep -i "procep" "Se procesaron $valid_registers registros validos."
-	logep -i "procep" "Se procesaron $valid_registers registros invalidos."
+	logep -i "procep" "Se procesaron $invalid_registers registros invalidos."
 		
 	# Mover archivo procesado.
 	movep "$1" "$GRUPO/$DIRPROC/proc"
@@ -443,7 +457,7 @@ function process_file_register_by_register(){
 if is_system_initialized
 then
 	# 2do informar cantidad de archivos a procesar
-	CANTIDADARCHIVOS=$(ls -1 | wc -l)
+	CANTIDADARCHIVOS=$(ls -1 $GRUPO/$DIROK/ | wc -l)
 	echo "Se van a procesar $CANTIDADARCHIVOS archivos."
 	logep -i "procep" "Cantidad de archivos a procesar: $CANTIDADARCHIVOS" 
 	# 3ro procesar archivos
