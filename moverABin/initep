@@ -89,13 +89,13 @@ then
 	
 	#permisos de archivos maestros (los agrego aca porque necesito la ruta que se carga en DIRMAE)
 	#supongo que todos los archivos maestros finalizan en .csv
-	directorio_actual="$PWD"
-	cd "$GRUPO/$DIRMAE"
+	ruta_absoluta_mae="${GRUPO}/$DIRMAE"
+	ruta_absoluta_nov="${GRUPO}/nov"
 
-	if fijar_permisos r *.csv
+	if fijar_permisos r ${ruta_absoluta_mae}/*.csv && fijar_permisos r ${ruta_absoluta_nov}/*.csv
 	then
 		#en la variable de ambiente path agrego el directorio de ejecutables
-		PATH=$PATH:"$GRUPO/$DIRBIN"
+		PATH=$PATH:"${GRUPO}/$DIRBIN"
 
 		#las variables se han inicalizado y los permisos de los arhcivos han sido fijados
 		mensaje="Estado del Sistema: INICIALIZADO"
@@ -140,5 +140,3 @@ then
 		done
 	fi
 fi
-
-cd "$directorio_actual"

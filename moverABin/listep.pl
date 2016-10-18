@@ -289,7 +289,7 @@ sub calcularYMostrarSaldos(){
 				$saldo_final='(*)';
 			}
 			my $salida="(++);".$inicio_trimestres{$trimestre}.";".$centro.";0;".$trimestre.";".'"'.$saldo.'"'.";".'"'.$saldo.'"'.";-;".'"'.
-			$saldo_acumulado.$saldo_final.'"'."\n";
+				$saldo_acumulado.$saldo_final.'"'."\n";
 			print $salida;	
 			if ($out){
 				print $out $salida;
@@ -297,41 +297,39 @@ sub calcularYMostrarSaldos(){
 			$saldo=~ s/,/./;
 			$saldo_acumulado=~ s/,/./;
 		}
-		else{
-			my $importe=$campos[5];
-			my $control='';
-			$importe=~ s/"//g;
-			$importe=~ s/,/./;
-			$saldo-=$importe;
-			if ($saldo<0){
-				$control="presupuesto excedidio";
-			}
-			if (!actividad_planeada($centro, $campos[3])){
-				if ($control){
-					$control=$control." ";
-				}
-				$control=$control."gasto no planificado";
-			}
-			if (! $control){
-				$control='-';
-			}
-			$saldo_acumulado-=$importe;
-			$importe=~ s/\./,/;
-			$saldo=~ s/\./,/;
-			$saldo_acumulado=~ s/\./,/;
-			my $salida=$campos[0].";".$campos[1].";".$campos[2].";".$campos[3].";".$campos[4].";".'"'.$importe.'"'.";".'"'.$saldo.'"'.";".$control.";";
-			if (ultimo_registro_centro($centro, $i)){
-				$salida=$salida.'"'.$saldo_acumulado."(*)".'"'."\n";
-			}else{
-				$salida=$salida.'"'.$saldo_acumulado.'"'."\n";
-			}
-			print $salida;
-			if ($out){
-				print $out $salida;
-			}
-			$saldo=~ s/,/./;
-			$saldo_acumulado=~ s/,/./;
+		my $importe=$campos[5];
+		my $control='';
+		$importe=~ s/"//g;
+		$importe=~ s/,/./;
+		$saldo-=$importe;
+		if ($saldo<0){
+			$control="presupuesto excedidio";
 		}
+		if (!actividad_planeada($centro, $campos[3])){
+			if ($control){
+				$control=$control." ";
+			}
+			$control=$control."gasto no planificado";
+		}
+		if (! $control){
+			$control='-';
+		}
+		$saldo_acumulado-=$importe;
+		$importe=~ s/\./,/;
+		$saldo=~ s/\./,/;
+		$saldo_acumulado=~ s/\./,/;
+		my $salida=$campos[0].";".$campos[1].";".$campos[2].";".$campos[3].";".$campos[4].";".'"'.$importe.'"'.";".'"'.$saldo.'"'.";".$control.";";
+		if (ultimo_registro_centro($centro, $i)){
+			$salida=$salida.'"'.$saldo_acumulado."(*)".'"'."\n";
+		}else{
+			$salida=$salida.'"'.$saldo_acumulado.'"'."\n";
+		}
+		print $salida;
+		if ($out){
+			print $out $salida;
+		}
+		$saldo=~ s/,/./;
+		$saldo_acumulado=~ s/,/./;
 		++$i;
 	}
 }
