@@ -242,7 +242,7 @@ function process_files_in_folder(){
 	for file in "$folder"/*
 	do	
 		# 4to valido la unicidad del archivo a procesar.
-		proces process_file $file
+		process_file $file
 	done
 
 }
@@ -257,7 +257,7 @@ function process_file(){
 		# 4to Antes de procesar un archivo verificar el formato.
 		if is_file_valid $1
 		then
-		# Para cada linea en el archivo
+			process_file_register_by_register $1
 
 		else
 			movep "$GRUPO/$DIRMAE/$1" "$GRUPO/$DIRNOK/" "procep"
@@ -333,14 +333,19 @@ function process_file_register_by_register(){
 							is_register_valid=0 #TRUE
 						else
 							logep -i "procep" "El registro, $line, tiene gastos invalidos"
+						fi
 					else
 						logep -i "procep" "El registro, $line, tiene fecha invalida"
+					fi
 				else
 					logep "procep" "El registro, $line, tiene trimestre invalido"
+				fi
 
 				logep "procep" "El registro, $line, tiene actividad invalida"
+			fi
 		else
 			logep "procep" "El registro, $line, tiene codigo de central invalido"
+		fi
 		
 		if $is_register_valid
 		then
@@ -353,7 +358,7 @@ function process_file_register_by_register(){
 			
 			echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE" >> $GRUPO/$DIRPROC/rechazado-$year_of_file
 			((invalid_registers++))
-		
+		fi
 		
 		# Grabar log registros validos e invalidos.
 		logep "procep" "Se procesaron $valid_registers registros validos."
@@ -380,3 +385,4 @@ else
 	logep -i "procep" "Cantidad de archivos a procesar: $CANTIDADARCHIVOS" 
 	# 3ro procesar archivos
 	process_files_in_folder
+fi
