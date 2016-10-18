@@ -274,6 +274,11 @@ do
   cp $file $DIRPROC
 done
 
+echoes "Borrando archivos temporales."
+rm -rf "$DIRECTORIOBINARIOS"
+rm -rf "$DIRECTORIOMAESTROS"
+rm -rf "$DIRECTORIOTABLAS"
+
 # Grabo en el archivo instalep.conf en /dirconf un registro por cada variable
 # configurada
 # Primero los nombres de los directorios en el orden en el que son solicitados
