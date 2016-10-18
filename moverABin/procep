@@ -234,6 +234,65 @@ function is_expenditure_valid(){
 	return $VALID
 }
 
+# Funciones para guardar registros ----------------------------------------------------
+
+# Guarda los registros validos en el formato deseado.
+# $1 es la linea completa a guardar. $2 el nombre del archivo sin la ruta.
+
+function save_valid_register(){
+	echo "--------------------------------------------------------------"
+	echo "UNO = $1"
+	echo "DOS = $2"
+	read -r ID_EJE FECHA_EJE COD_CEN_EJE NOM_ACT_EJE NOM_TRI_EJE GASTO_EJE <<< "$1"
+	
+	# Obtengo el anio del archivo. (Segundo campo luego del _)
+	year_of_file=$(echo $2 | cut -d"_" -f2)
+
+	# Obtengo el codigo de la privincia. (Tercer campo luego del _)
+	COD_PROV_FILE=$(echo $2 | cut -d"_" -f3)
+
+	SAVED_IFS=$IFS
+	IFS=';'
+
+	while read -r line2
+	do
+
+		read -r COD_CEN NOM_CEN <<< "$line2"
+		if [ "$COD_CEN_EJE" = "$COD_CEN" ]
+		then 
+			NOM_CEN_TO_SAVE=$NOM_CEN
+		fi
+	
+	done < $GRUPO/$DIRMAE/centros.csv
+
+	while read -r line3
+	do
+		
+		read -r COD_ACT OBJ_ACT PGM_ACT NOM_ACT <<< "$line3"
+		if [ "$NOM_ACT_EJE" = "$NOM_ACT" ]
+		then 
+			COD_ACT_TO_SAVE=$COD_ACT
+		fi
+	
+	done < $GRUPO/$DIRMAE/actividades.csv
+
+	while read -r line4
+	do
+		
+		read -r COD_PROV NOM_PROV REG_PROV <<< "$line4"
+		if [ "$COD_PROV_FILE" = "$COD_PROV" ]
+		then 
+			NOM_PROV_TO_SAVE=$NOM_PROV
+		fi
+	
+	done < $GRUPO/$DIRMAE/provincias.csv
+
+	IFS=$SAVED_IFS
+	echo "$NOM_ACT_EJE es $COD_ACT_TO_SAVE - $COD_PROV_FILE es $NOM_PROV_TO_SAVE - $COD_CEN_EJE es $NOM_CEN_TO_SAVE"
+
+	echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE;$2;$COD_ACT_TO_SAVE;$NOM_PROV_TO_SAVE;$NOM_CEN_TO_SAVE" >> $GRUPO/$DIRPROC/ejecutado-$year_of_file
+}
+
 # Funciones procesadoras --------------------------------------------------------------
 
 # Procesa todos los archivos de una carpeta.	
@@ -299,22 +358,17 @@ function process_file_register_by_register(){
 	# Separo los componentes del registro
 	IFS=';'
 
-	while read -r line
+	while read -r line1
 	do
 
 		is_register_valid=1 #FALSE
 
-		read -r ID_EJE FECHA_EJE COD_CEN_EJE NOM_ACT_EJE NOM_TRI_EJE GASTO_EJE <<< "$line"
+		read -r ID_EJE FECHA_EJE COD_CEN_EJE NOM_ACT_EJE NOM_TRI_EJE GASTO_EJE <<< "$line1"
 
 		# El primer registro contiene la estructura.
-		# Lo mando tal cual a los archivos de validos e invalidos.
-		if [ "$lines_processed" -eq "0" ]
+		# Lo ignoro.
+		if [ "$lines_processed" -ne "0" ]
 		then
-			
-			echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE" >> $GRUPO/$DIRPROC/ejecutado-$year_of_file
-			echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE" >> $GRUPO/$DIRPROC/rechazado-$year_of_file
-
-		else
 
 			# 5to validar registro.
 			# Componente a componente. 
@@ -337,19 +391,19 @@ function process_file_register_by_register(){
 							then
 								is_register_valid=0 #TRUE
 							else
-								logep -i "procep" "El registro, $line, tiene gastos invalidos"
+								logep -i "procep" "El registro, $line1, tiene gastos invalidos"
 							fi
 						else
-							logep -i "procep" "El registro, $line, tiene fecha invalida"
+							logep -i "procep" "El registro, $line1, tiene fecha invalida"
 						fi
 					else
-						logep -i "procep" "El registro, $line, tiene trimestre invalido"
+						logep -i "procep" "El registro, $line1, tiene trimestre invalido"
 					fi
 
-					logep -i "procep" "El registro, $line, tiene actividad invalida"
+					logep -i "procep" "El registro, $line1, tiene actividad invalida"
 				fi
 			else
-				logep -i "procep" "El registro, $line, tiene codigo de central invalido"
+				logep -i "procep" "El registro, $line1, tiene codigo de central invalido"
 			fi
 
 		
@@ -357,8 +411,9 @@ function process_file_register_by_register(){
 			if [ $is_register_valid -eq "0" ]
 			then
 				# 6to grabar registro valido. Aumentar contador
-			
-				echo "$ID_EJE;$FECHA_EJE;$COD_CEN_EJE;$NOM_ACT_EJE;$NOM_TRI_EJE;$GASTO_EJE" >> $GRUPO/$DIRPROC/ejecutado-$year_of_file
+				echo $filename
+				save_valid_register "$line1" "$filename"
+
 				((valid_registers++))
 			else
 				# 7mo grabar registro invalido. Aumentar contador
