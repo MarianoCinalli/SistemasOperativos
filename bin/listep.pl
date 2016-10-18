@@ -501,8 +501,6 @@ if ($opcion==2){
 		open($out, '>', $ruta) or die($!);
 	}
 	my @registros;
-	#tiro primera linea
-	my $linea=<$archivo>;
 	while ($linea=<$archivo>){
 		chop $linea;
 		my @campos=split ';', $linea;

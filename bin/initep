@@ -48,7 +48,7 @@ then
 #Verifico permiso de los archivos configuracion y de los binarios
 #Termina la ejecucion de initep sino puede cambiar el permiso correspondiente
 
-elif fijar_permisos r "$configuracion" && fijar_permisos "r x" logep demonep
+elif fijar_permisos r "$configuracion" && fijar_permisos "r x" logep demonep movep listep.pl procep
 then
 	#Inicializo variables de directorio
 	while read -r linea
