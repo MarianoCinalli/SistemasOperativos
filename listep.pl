@@ -95,12 +95,14 @@ sub getFiltro{
 
 sub getPresupuestoTrimestres{
 	my %presupuesto_trimestres=($trimestres[0], {}, $trimestres[1], {}, $trimestre[2], {}, $trimestre[3], {});
-	open (my $archivo, '<', $path."/sancionado-".$_[0].".csv") or die($!);
+	open (my $archivo, '<', $path_sancionado.$_[0].".csv") or die("fallo al abrir archivo sancionado-".$_[0]."csv");
 	my $linea=<$archivo>;
 	while ($linea=<$archivo>){
 		chop($linea);
 		my @campos=split(';', $linea);
 		#reemplazo coma por punto para poder sumar doubles
+		$campos[2]=~ s/"//g;
+		$campos[3]=~ s/"//g;
 		$campos[2] =~ s/,/./;
 		$campos[3] =~ s/,/./;
 		$presupuesto_trimestres{$campos[1]}->{$campos[0]}=$campos[2]+$campos[3];
@@ -120,7 +122,7 @@ sub getArchivoSalida{
 }
 
 sub getInicioTrimestres{
-	open(my $trimestres, '<', $path."/trimestres.csv") or die($!);
+	open(my $trimestres, '<', $path_maestros."/trimestres.csv") or die("fallo al abrir trimestres.csv");
 	my $linea=undef;
 	my %inicio_trimestres;
 	$linea=<$trimestres>;
@@ -149,7 +151,7 @@ sub getInicioTrimestres{
 
 sub getGastosPlanificados{
 	my %gastos_planificados;
-	open(my $planes, '<', $path."/tabla-AxC.csv") or die($!);
+	open(my $planes, '<', $path_maestros."/tabla-AxC.csv") or die("fallo al abrir tabla-AxC.csv");
 	my $linea;
 	$linea=<$planes>;
 	while ($linea=<$planes>){
@@ -165,7 +167,7 @@ sub getGastosPlanificados{
 
 sub getNumActividades{
 	my %num_actividades;
-	open(my $nombres, '<', $path."/actividades.csv") or die($!);
+	open(my $nombres, '<', $path_maestros."/actividades.csv") or die("fallo al abrir actividades.csv");
 	my $linea;
 	$linea=<$nombres>;
 	while ($linea=<$nombres>){
@@ -178,7 +180,7 @@ sub getNumActividades{
 
 sub getNombres{
 	my %nombres;
-	open ($fnombres, '<', $path."/".$_[0]) or die($!);
+	open ($fnombres, '<', $path_maestros."/".$_[0]) or die("fallo a abrir ".$path_maestros."/".$_[0]);
 	my $linea;
 	$linea=<$fnombres>;
 	while ($linea=<$fnombres>){
@@ -192,8 +194,8 @@ sub getNombres{
 
 sub CargarRegistros{
 	my @regitros;
-	foreach my $ruta (<$path/ejecutado_$_[0]*>){
-		open(my $archivo, '<', $ruta) or die $!;
+	foreach my $ruta (<$path_ejecutados/ejecutado_$_[0]*>){
+		open(my $archivo, '<', $ruta) or die ("fallo al abrir ".$ruta);
 		my $linea;
 		$linea=<$archivo>;
 		while ($linea=<$archivo>){
@@ -292,6 +294,7 @@ sub calcularYMostrarSaldos(){
 		else{
 			my $importe=$campos[5];
 			my $control='';
+			$importe=~ s/"//g;
 			$importe=~ s/,/./;
 			$saldo-=$importe;
 			if ($saldo<0){
@@ -378,7 +381,14 @@ sub ordenarPorTrimestreCentro{
 #empieza Script--------------------------------------------------
 
 #variable harcadodeada a borrar
-$path="/home/pepe/Escritorio/gaspar/cosas/gaspar/contenido_pendrive/programacion/sistemas_operativos/tp/SistemasOperativos/datos";
+#ruta a directorio de ejecutados
+$path_ejecutados="/home/pepe/Escritorio/gaspar/cosas/gaspar/contenido_pendrive/programacion/sistemas_operativos/tp/SistemasOperativos/imp";
+#ruta a directorios de maestros
+$path_maestros="/home/pepe/Escritorio/gaspar/cosas/gaspar/contenido_pendrive/programacion/sistemas_operativos/tp/SistemasOperativos/mae";
+#ruta a archivo sancionados, el anio se lo agrego despues, cuando me lo pase el usario, creo que es la misma ruta que los ejecutados
+$path_sancionado=$path_ejecutados."/sancionado-";
+#ejecutado anio_fiscal, el path al arcivo  de salida del procep, el anio se lo agrego despues
+$path_ejecutado_anio_fiscal="/home/pepe/Escritorio/gaspar/cosas/gaspar/contenido_pendrive/programacion/sistemas_operativos/tp/SistemasOperativos/imp/proc/ejecutado_";
 
 printf "Elija el listado que desee generar: \n";
 printf "1- Listado de presupuesto sancionado \n";
@@ -394,8 +404,8 @@ if ($opcion!=1 && $opcion!=3 && $opcion!=2){
 $anio=getAnio;
 
 if ($opcion==1){
-	my $ruta = $path ."/sancionado-" . $anio . ".csv";
-	open($sancionado, '<',$ruta) or die($!);
+	my $ruta = $path_sancionado.$anio.".csv";
+	open($sancionado, '<',$ruta) or die("fallo al abrir ".$ruta);
 	%centros_nombres=getNombres("centros.csv");
 	printf "Seleccione orden de los campos para ordenar los presupuestos sancionados \n";
 	printf "1- Codigo Centro/Trimestre \n";
@@ -405,21 +415,25 @@ if ($opcion==1){
 	if ($orden!=1 && $orden!=2){
 		die("error: opcion $opcion incorrecta");
 	}
-	my %centros_nombres=getCentrosNombres();
+	my %centros_nombres=getNombres("centros.csv");
 	$linea=<$sancionado>;
 	my @registros;
 	my $total_anual=0;
 	while ($linea=<$sancionado>){
+		#cargo los registros en memoria y los dejo  listos para mostrar, tambien calculo total
 		chop $linea;
 		my @campos=split ";", $linea;
+		$campos[2]=~ s/"//g;
+		$campos[3]=~ s/"//g;
 		$campos[2]=~ s/,/./;
 		$campos[3]=~ s/,/./;
 		$total=$campos[2]+$campos[3];
-		$total_anua+=$total;
+		$total_anual+=$total;
 		$total=~ s/\./,/;
 		$linea=$centros_nombres{$campos[0]}.";".$campos[1].";".'"'.$total.'"'."\n";
 		push(@registros, $linea);
 	}
+	#ordeno los registros
 	if ($orden==1){
 		@registros=sort {ordenarPorCentroTrimestre($a, $b)} @registros;	
 	}else{
@@ -442,7 +456,7 @@ if ($opcion==1){
 		}
 	}
 	$total_anual=~ s/\./,/;
-	my $salida="Total Anual;".$total_anual."\n";
+	my $salida="Total Anual;".'"'.$total_anual.'"'."\n";
 	print $salida;
 	if ($out){
 		print $out $salida;
@@ -455,10 +469,10 @@ if ($opcion==1){
 sub ordenarPorProvincia{
 	my @campos_a=split ";", $_[0];
 	my @campos_b=split ";" , $_[1];
-	if (@campos_a[4]<@campos_b[4]){
+	if (@campos_a[7] lt @campos_b[7]){
 		return -1;	
 	}
-	if (@campos_a[4]>@campos_b[4]){
+	if (@campos_a[7] gt @campos_b[7]){
 		return 1;	
 	}
 	return 0;
@@ -466,23 +480,35 @@ sub ordenarPorProvincia{
 
 if ($opcion==2){
 	my %provincias_nombres=getNombres("provincias.csv");
-	print "códigos provincias\n";	
+	print "Código----Provincia\n";	
 	foreach (keys(%provincias_nombres)){
 		print $provincias_nombres{$_}."   ".$_."\n";
 	}
-	my $filtro_provincias=getFiltro("Ingrese la lista de códigos de provincias a filtrar (1,2,3,4) separados por comas,\n"."si no ingresa ninguna provincia se asume que quiere todas:");
+	my $filtro_provincias=getFiltro("Ingrese la lista de provincias (puede ser nombre o numero) a filtrar, separados por comas,\n"."si no ingresa ninguna provincia se asume que quiere todas:");
+	#si agrego numeros los remplazo por nombre de provincias
+	foreach(keys(%{$filtro_provincias->{tokens}})){
+		if (exists($provincias_nombres{$_})){
+			$filtro_provincias->add($provincias_nombres{$_});
+		}
+	}
 	%gastos_planificados=getGastosPlanificados();
-	open(my $archivo, '<', $path."ejecutado_".$anio) or die($!);
-	my $linea=<$archivo>;
+	open(my $archivo, '<', $path_ejecutado_anio_fiscal.$anio.".csv") or die("fallo al abrir archivo ejecutado_".$anio.".csv");
 	my $ruta=getArchivoSalida();
 	my $out=undef;
 	if ($ruta){
 		open($out, '>', $ruta) or die($!);
 	}
 	my @registros;
+	#tiro primera linea
+	my $linea=<$archivo>;
 	while ($linea=<$archivo>){
+		chop $linea;
 		my @campos=split ';', $linea;
-		$salida=$campos[0].$campos[1].$campos[8].$campos[6].$campos[2].$campos[3].$campos[4].$campos[7];	
+		if ($filtro_provincias->filtrar($campos[8])){
+			#el campo control se lo agrego mas adelante
+			$salida=$campos[1].";".$campos[2].";".$campos[9].";".$campos[7].";".$campos[3].";".$campos[4].";".$campos[5].";".$campos[8];
+			push(@registros, $salida);
+		}	
 	}
 	sort {ordenarPorProvincia($a, $b)} @registros;
 	my $salida="Fecha;Centro;Nom Cen;cod Act;Actividad;Trimeste;Gasto;provincia;control\n";
@@ -497,11 +523,12 @@ if ($opcion==2){
 	foreach (@registros){
 		my @campos_act=split ";" , $registros[$i];
 		$campos_act[6]=~ s/,/./;
+		$campos_act[6]=~ s/"//g;
 		$gasto_total+=$campos_act[6];
-		if (actividad_planeada($campos[1], $campos[3])){
-			$salida=$_."gasto fuera de la planificacion";
+		if (! actividad_planeada($campos_act[1], $campos_act[3])){
+			$salida=$_.";gasto fuera de la planificacion\n";
 		}else{
-			$salia=$_."-";
+			$salida=$_.";-\n";
 		}
 		print $salida;
 		if ($out){
@@ -511,13 +538,14 @@ if ($opcion==2){
 		if ($campos_act[7] ne $campos_next[7]){
 			#ultimo registro de provincia
 			$gasto_total=~ s/\./,/;
-			my $salida=";;;;;".'"'.$gasto_total.'"'.";".$campos_act[7]."\n";
+			my $salida="-;-;-;-;-;Total Gastos ".$campos_act[7].";".'"'.$gasto_total.'"'."\n";
 			print $salida;
 			if ($out){
 				print $out $salida;
 			}
 			$gasto_total=0;
 		}
+		++$i;
 	}
 	exit;
 }
@@ -529,11 +557,12 @@ if ($opcion==2){
 %inicio_trimestres=getInicioTrimestres($anio);
 #creo un hash que contendra un hash para trimestre, dentro del hash de cada trimestre estan los centros y sus presupuestos
 %presupuesto_trimestres=getPresupuestoTrimestres($anio);
-%num_actividades=getNumActividades;
-%gastos_planificados=getGastosPlanificados;
-#este objeto me ayuda a filtara trimestres
+%num_actividades=getNumActividades();
+%gastos_planificados=getGastosPlanificados();
+#este objeto filtar trimestre, si el usario no agrega ningun trimestre se cargan los de la lista @trimestres, o sea, todos
 $filtro_trimestres=getFiltro("Ingrese la lista de trimestres a filtrar (1,2,3,4) separados por comas,\n"."si no ingresa ningun trimestre se asume que quiere
 todos:", \@trimestres);
+#si usuario no agrega ningun centro, el filtro se setea para aceptar todo
 $filtro_centros=getFiltro("Ingrese centros a filtrar, puede ser una lista, en la lista puede haber rangos (centro1,centro2,rango), si no\n"."ingresa nada asume que quiere todos:");
 #carga los registros que pasan la filtracion
 @registros=CargarRegistros($anio, $filtro_trimestres, $filtro_centros);
