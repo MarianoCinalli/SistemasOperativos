@@ -81,6 +81,9 @@ then
 			DIRPROC)
 				export DIRPROC=$ruta 
 				;;
+			DIRNOK)
+				export DIRNOK=$ruta 
+				;;
 		esac
 	done <"$configuracion"
 	

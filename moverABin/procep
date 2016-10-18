@@ -177,7 +177,7 @@ function is_trimester_valid(){
 		IFS=';'
 		
 		read -r ANO_TRI NOM_TRI FDESDE_TRI FHASTA_TRI <<< "$line"
-		if [ "$1" = "$NOM_TRI" -a "$CURRENTYEAR" = "$ANO_TRI" ]
+		if [ "$1" = "$NOM_TRI" -a "$CURRENT_YEAR" = "$ANO_TRI" ]
 		then 
 			VALID=0 #TRUE
 		fi
@@ -223,7 +223,7 @@ function is_expenditure_valid(){
 	#TESTEADO
 	VALID=1 #FALSE
 	
-	if [ "$1" -gt "0" ]
+	if (("$1">"0"))
 	then
 
 		VALID=0 #TRUE
@@ -241,8 +241,13 @@ function process_files_in_folder(){
 	# Itero por cada archivo dentro de la carpeta
 	for file in "$GRUPO/$DIRPROC"/*
 	do	
-		# 4to valido la unicidad del archivo a procesar.
-		process_file $file
+		echo $file
+		if [ "$file" = "$GRUPO/$DIRPROC/proc" ]
+		then
+			echo "Direcotrio $1"
+		else
+			process_file $file
+		fi
 	done
 
 }
@@ -369,7 +374,9 @@ function process_file_register_by_register(){
 	logep -i "procep" "Se procesaron $valid_registers registros invalidos."
 		
 	# Mover archivo procesado.
-	movep "$GRUPO/$DIRMAE/$1" "$GRUPO/$DIRPROC/ejecutado/$filename"	
+	movep "$1" "$GRUPO/$DIRPROC/proc"	
+	movep "$GRUPO/$DIRPROC/ejecutado-$year_of_file" "$GRUPO/$DIROK"
+	movep "$GRUPO/$DIRPROC/rechazado-$year_of_file" "$GRUPO/$DIRNOK"
 
 }
 
