@@ -92,7 +92,46 @@ sub getFiltro{
 	return $filtro;
 }
 
+sub getFiltroTrimestre
+{	
+#muestro mensaje
+	print $_[0];
+	my $linea=<STDIN>;
+	chop $linea;
+	my @campos=split (",", $linea);
+	my $filtro=undef;
+	if (!@campos){
+		$filtro=Filtro->new(@trimestres);
+		return $filtro;
+	}
+	$filtro=Filtro->new();
+	#elimino espacios en blancos y agrego a filtro
+	foreach $campo (@campos){
+		$campo=~ s/^\s*//;
+		$campo=~ s/\s*$//;
+		if ($campo == 1)
+		{
+			$filtro->add("Primer Trimestre ".$anio);
+		}
+		if ($campo == 2)
+		{
+			$filtro->add("Segundo Trimestre ".$anio);
+		}
 
+		if ($campo == 3)
+		{
+			$filtro->add("Tercer Trimestre ".$anio);
+		}
+		if ($campo == 4)
+		{
+			$filtro->add("Cuarto Trimestre ".$anio);
+		}
+
+	}
+	return $filtro;
+	
+
+}
 sub getPresupuestoTrimestres{
 	my %presupuesto_trimestres=($trimestres[0], {}, $trimestres[1], {}, $trimestre[2], {}, $trimestre[3], {});
 	my $archivo_ruta=$path_sancionado.$_[0].".csv";
@@ -386,10 +425,10 @@ sub ordenarPorTrimestreCentro{
 
 $path_grupo=$ENV{GRUPO};
 $path_maestros=$path_grupo."/".$ENV{DIRMAE};
-$path_ejecutado_anio_fiscal=$path_grupo."/".$ENV{DIRPROC}."/proc/ejecutado-";
-$path_ejecutados=$path_grupo."/".$ENV{DIROK}."/ejecutado_";
+$path_ejecutado_anio_fiscal=$path_grupo."/".$ENV{DIRPROC}."/ejecutado-";
+$path_ejecutados=$path_grupo."/".$ENV{DIRPROC}."/proc/ejecutado_";
 $path_sancionado=$path_maestros."/sancionado-";
-
+printf $path_ejecutados;
 printf "Elija el listado que desee generar: \n";
 printf "1- Listado de presupuesto sancionado \n";
 printf "2- Listado de presupuesto ejecutado \n";
@@ -505,7 +544,7 @@ if ($opcion==2){
 		my @campos=split ';', $linea;
 		if ($filtro_provincias->filtrar($campos[8])){
 			#el campo control se lo agrego mas adelante
-			$salida=$campos[1].";".$campos[2].";".$campos[9].";".$campos[7].";".$campos[3].";".$campos[4].";".$campos[5].";".$campos[8];
+			$salida=$campos[1].";".$campos[2].";".$campos[9].";".$campos[7].";".$campos[3].";".$campos[4].';'.'"'.$campos[5].'"'.";".$campos[8];
 			push(@registros, $salida);
 		}	
 	}
@@ -559,11 +598,11 @@ if ($opcion==2){
 %num_actividades=getNumActividades();
 %gastos_planificados=getGastosPlanificados();
 #este objeto filtar trimestre, si el usario no agrega ningun trimestre se cargan los de la lista @trimestres, o sea, todos
-$filtro_trimestres=getFiltro("Ingrese la lista de trimestres a filtrar (1,2,3,4) separados por comas,\n"."si no ingresa ningun trimestre se asume que quiere
-todos:", \@trimestres);
+$filtro_trimestres=getFiltroTrimestre("Ingrese la lista de trimestres a filtrar (1,2,3,4) separados por comas,\n"."si no ingresa ningun trimestre se asume que quiere
+todos:");
 #si usuario no agrega ningun centro, el filtro se setea para aceptar todo
 $filtro_centros=getFiltro("Ingrese centros a filtrar, puede ser una lista, en la lista puede haber rangos (centro1,centro2,rango), si no\n"."ingresa nada asume que quiere todos:");
 #carga los registros que pasan la filtracion
 @registros=CargarRegistros($anio, $filtro_trimestres, $filtro_centros);
 #hace todo el trabajo y lo imprime por pantalla
-calcularYMostrarSaldos();	
+calcularYMostrarSaldos();		
